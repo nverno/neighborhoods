@@ -25,7 +25,7 @@ source("~/work/functions/functions-neighborhood.R")
 ##    whether a neighbor is included in the neighborhood analysis)
 ## - spec: species of targets we are interested in (all species are used as neighbors)
 nsize <- 9
-alpha <- beta <- 1
+alpha <- beta <- theta <- 1
 C <- 2
 dep.var <- "bagrowth"
 ind.var <- "ba"
@@ -37,10 +37,11 @@ sr <- side_length - 1
 
 ###############################################################################
 ##
-## Real data: pplot 9
+## Real data:
 ##
 pp <- read.csv("~/work/data/data/dynamicallometry/moose-long-canopies.csv")
-dat <- subset(pp, pplot %in% c(9))
+pnum <- 9
+dat <- subset(pp, pplot %in% c(pnum))
 
 ## define targets and neighbors
 targets <- subset(dat, bqudx < (12-sr) & bqudx > (-1 + sr) & bqudy < (12 - sr) &
