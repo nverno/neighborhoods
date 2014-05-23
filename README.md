@@ -1,29 +1,20 @@
-Project Template
+Neighborhoods
 ================
 
-Description
+Create neighborhood structured data for Moosilauke/BC plots.
 
 Dependencies
 ------------
 
-Other projects/scripts required (i.e functions, neighborhood-models)
-
-* [other project 1](http://github.com/ghandi9000/) 
-* [other project 2](http://github.com/ghandi9000/)
+* [functions-neighborhoods.R](https://github.com/ghandi9000/functions/blob/master/functions-neighborhood.R) 
+* [more neighborhood functions](https://github.com/ghandi9000/functions/tree/master/neighborhoods)
 
 Data
 ----
 
-What datasets are required
+* [data](https://github.com/ghandi9000/data)
 
 Directory Layout
 ----------------
 
-* data-prep, data-trans contain scripts to clean and perform manipulations such as transformation between wide/long or constructing size classes from continuous variables.
-* functions.R stores store user-defined functions
-* etc.
-
-References
-----------
-
-Papers, codes
+* surround: scripts to create neighborhood surround index
