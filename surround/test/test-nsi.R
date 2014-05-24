@@ -57,7 +57,7 @@ glines <- function() {
 }
 
 ## choose target
-i <- 10
+i <- 11
 num_nebs <- abba_mats$number_neighbors[i]
 nbrs <- data.frame(x=abba_mats$direction_x[i, 1:num_nebs],
                    y=abba_mats$direction_y[i, 1:num_nebs],
