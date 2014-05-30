@@ -81,8 +81,6 @@ glines <- function(nsize=9) {
            lwd = 2, col = "dark red")
 }
 
-lines(x=c(-1, 1), y=c(1, 1), lwd=100, col= alpha("blue", 0.5))
-lines(x=c(0,1,1), y=c(1,1,0), lwd = 100, col = alpha("blue", 0.5))
 
 ## Draw connected components as semi-transparent bars of color
 cc_lines <- function(cc, C, nsize) {
@@ -144,23 +142,25 @@ library(scales)
 ##   neighborhood size specified
 ## nsize=9, C=2
 ttl <- paste(nsize, "Quadrat Neighborhood Layout")
-draw_empty(nsize, title = ttl, numbers = "neighborhood")
+draw_empty(nsize, title = ttl, numbers = "image")
 glines(nsize)
 cc_lines(cc=1:(nsize-1), C=2, nsize=9) # add connected component bars
 cc_ellipse(cc=1:(nsize-1), C=2, nsize=nsize) # add connected component ellipses
 
 ## nsize=9, C=3
+dev.new()
 ttl <- paste(nsize, "Quadrat Neighborhood Layout")
 draw_empty(nsize, title = ttl, numbers = "neighborhood")
 glines(nsize)
 cc_lines(cc=2:3, C=3, nsize=9)
 
 ## nsize=25, C=2
+dev.new()
 ttl <- paste(25, "Quadrat Neighborhood Layout")
 draw_empty(25, ttl)
 glines(25)
 cc_lines(cc=4, C=2, nsize=25)
-cc_ellipse(cc=4, C=2, nsize=25)
+cc_ellipse(cc=1:nouter(25), C=2, nsize=25)
 
 ## Neighborhood grid with neighbor points
 ttl <- paste("Neighborhood for tree", i, "in pplot", pnum, "from year", abba_mats$yr[i])
@@ -349,7 +349,7 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
 ##                                   Test
 ##
 ################################################################################
-showNSI(tree=1, NM=abba_mats, nsize=9, C=2, alpha=1, beta=1, theta=1, together=TRUE)
+showNSI(tree=2, NM=abba_mats, nsize=9, C=2, alpha=1, beta=1, theta=1, together=TRUE)
 
 
 ## Get all the NSIs
@@ -365,3 +365,5 @@ for (i in 1:length(nsis)) {
     nsind <- nsi(nbrs=nbrs, C=C, alpha=alpha, beta=beta, theta=theta, nsize=9)
     nsis[i] <- nsind
 }
+
+xs <-
