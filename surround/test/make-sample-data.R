@@ -17,7 +17,8 @@ source("~/work/functions/functions-neighborhood.R")
 
 ## Neighborhood variables
 ## - nsize is 9,25, etc
-## - alpha, beta are direction, slope params
+## - alpha, beta are neighborhood parameters (distance, size)
+## - theta is direction, slope params
 ## - C is size of connected components
 ## - dep.var is neighbor size variable
 ## - ind.var is comparison variable between target and neighbor
@@ -63,8 +64,7 @@ nbrs <- data.frame(x=abba_mats$direction_x[i:num_nebs],
                    distance=abba_mats$distances[i:num_nebs],
                    size=abba_mats$variable[i:num_nebs])
 
-nsi(nbrs, side_length, C, alpha, beta, theta)
-
+nsi(nbrs=nbrs, C=C, alpha = alpha, beta = beta, theta = theta, nsize = 9)
 
 ###############################################################################
 ##

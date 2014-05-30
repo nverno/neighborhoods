@@ -32,10 +32,7 @@ connected_comps <- function(C, nsize=9) {
     num_outer <- nouter(nsize)
     inds <- component_indices(nsize)
     comps <- lapply(1:nrow(inds), FUN = function(i) {
-        iend <- (i+C-1) %% nrow(inds)
-        iseq <- i:iend
-        if (iend < i)
-            iseq <- c(i:nrow(inds), 0:iend)
+        iseq <- connected_comps_inds(i=i,C=C,nsize=nsize)
         inds[iseq, ]
     })
     return ( comps )
@@ -51,13 +48,18 @@ connected_comps <- function(C, nsize=9) {
 ## - theta: parameters for slope/aspect
 nsi <- function(nbrs, C, alpha, beta, theta, nsize = 9) {
     num_outer <- nouter(nsize)
-    oc <- components_occupied(nbrs=cbind(nbrs$x,nbrs$y), nsize=nsize) # indices of occupied components
-    ccs <- connected_comps_occupied(oc=oc, nsize=nsize, C=C) # indices of occupied connected components
-    oc_masses <- component_masses(oc=oc, alpha=alpha, beta=beta,
-                                  theta=theta, nbrhood=nbrs, nsize=nsize) # individual component masses
-    cc_masses <- connected_comps_masses(oc_masses=oc_masses, ccs=ccs, C=C,
-                                        nsize=nsize) # connected component masses
-    return ( sum(c(oc_masses, cc_masses)) )
+    if (nrow(nbrs) > 1) {
+        oc <- components_occupied(nbrs=cbind(nbrs$x,nbrs$y), nsize=nsize) # indices of occupied components
+        ccs <- connected_comps_occupied(oc=oc, nsize=nsize, C=C) # indices of occupied connected components
+        oc_masses <- component_masses(oc=oc, alpha=alpha, beta=beta,
+                                      theta=theta, nbrhood=nbrs, nsize=nsize) # individual component masses
+        ifelse(length(ccs) > 0,
+           { cc_masses <- connected_comps_masses(oc_masses=oc_masses, ccs=ccs, C=C,
+                                                 nsize=nsize) }, # connected component masses
+           { cc_masses <- 0 })
+        return ( sum(c(oc_masses, cc_masses)) )
+    }
+    return ( 0 )
 }
 
 
@@ -71,11 +73,7 @@ nsi <- function(nbrs, C, alpha, beta, theta, nsize = 9) {
 connected_comps_masses <- function(oc_masses, ccs, C, nsize = 9) {
     num_outer <- nouter(nsize)
     cc_masses <- sapply(1:length(ccs), function(i) {
-        iend <- (i+C-1) %% (num_outer+1)
-        iseq <- i:iend
-        if (iend < i)
-            ifelse(iend > 0, { iseq <- c(i:num_outer, 1:iend) },
-                   { iseq <- c(i:num_outer, 1) })
+        iseq <- connected_comps_inds(i,C,nsize)
         sum( oc_masses[iseq] ) # sum the occupied component masses
     })
     return ( cc_masses )
@@ -105,15 +103,21 @@ component_masses <- function(oc, alpha, beta, theta, nbrhood, nsize=9) {
 connected_comps_occupied <- function(oc, C, nsize=9) {
     num_outer <- nouter(nsize)
     ccs <- unlist(sapply(oc, function(i) {
-        iend <- (i+C-1) %% (num_outer+1)
-        iseq <- i:iend
-        if (iend < i)
-            ifelse(iend > 0, { iseq <- c(i:num_outer, 1:iend) },
-                   { iseq <- c(i:num_outer, 1) })
+        iseq <- connected_comps_inds(i,C,nsize)
         ifelse( all(iseq %in% oc), i, NA )
     }))
     return ( ccs[!is.na(ccs)] )
 }
+
+
+## Returns the indices of components of connected components (neighborhood ordering)
+connected_comps_inds <- function(i, C, nsize=9) {
+    num_outer <- nouter(nsize)
+    stopifnot(i < (num_outer+1) & i > 0)
+    iseq <- ( ( (i-1):(i+C-2) ) %% num_outer ) + 1
+    return ( iseq )
+}
+
 
 ## Returns list of indices of neighborhood components that are occupied
 ##  in a given neighborhood
