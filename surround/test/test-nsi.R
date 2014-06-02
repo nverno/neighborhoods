@@ -101,12 +101,12 @@ cc_lines <- function(cc, C, nsize) {
 ##  the neighborhood size
 cc_ellipse <- function(cc, C, nsize) {
     require(plotrix) # for ellipses
-    inds <- component_indices(nsize = nsize) # indices of outer ring
+    inds <- component_indices(nsize = nsize)         # indices of outer ring
     for (c in cc) {
         cc_inds <-connected_comps_inds(i=c,C=C,nsize=nsize)
         x <- sum(inds[cc_inds,1]) / C
         y <- sum(inds[cc_inds,2]) / C
-        orient <- ceiling(c / (sqrt(nsize)-1)) %% 2 # 1: horizontal orientation
+        orient <- ceiling(c / (sqrt(nsize)-1)) %% 2  # 1: horizontal orientation
         ifelse(orient==1, { a = 1; b = 0.5 }, { a = .5; b = 1})
         draw.ellipse(x=x, y=y, a=a, b=b, lwd = 2)
     }
@@ -114,14 +114,14 @@ cc_ellipse <- function(cc, C, nsize) {
 
 ## Draws an empty neighborhood of specified size
 draw_empty <- function(nsize=9, title="", numbers="none") {
-    disp <- (sqrt(nsize)-1) / 2 # neighborhood size (drawn around origin)
+    disp <- (sqrt(nsize)-1) / 2                   # neighborhood size (drawn around origin)
     pgrid <- expand.grid(x=(-disp-1):(disp+1), y=(-disp-1):(disp+1))
     plot(pgrid, type = "n", main = title)
     if (numbers == "image") {
         text(pgrid, labels = 1:nrow(pgrid), cex=1.5)
     }
     if (numbers == "neighborhood"){
-        inds <- component_indices(nsize = nsize) # indices of outer ring
+        inds <- component_indices(nsize = nsize)  # indices of outer ring
         text(inds, labels=c(1:nouter(nsize)), cex=1.5)
     }
 }
@@ -144,8 +144,8 @@ library(scales)
 ttl <- paste(nsize, "Quadrat Neighborhood Layout")
 draw_empty(nsize, title = ttl, numbers = "image")
 glines(nsize)
-cc_lines(cc=1:(nsize-1), C=2, nsize=9) # add connected component bars
-cc_ellipse(cc=1:(nsize-1), C=2, nsize=nsize) # add connected component ellipses
+cc_lines(cc=1:(nsize-1), C=2, nsize=9)        # add connected component bars
+cc_ellipse(cc=1:(nsize-1), C=2, nsize=nsize)  # add connected component ellipses
 
 ## nsize=9, C=3
 dev.new()
@@ -189,8 +189,8 @@ imgorder <- function(ninds, nsize = 9) {
 
 ## Image of neighborhood (pixel intensity by quadrat MASS)
 mat <- matrix(NA, side_length, side_length)
-img_oc <- imgorder(oc) # image ordered occupied components
-img_cc <- imgorder(ccs) # image ordered occupied connected components
+img_oc <- imgorder(oc)   # image ordered occupied components
+img_cc <- imgorder(ccs)  # image ordered occupied connected components
 mat[img_oc] <- oc_masses
 dev.new()
 levelplot(mat, main = "Masses of individual components")
@@ -225,24 +225,24 @@ glines()
 xs <- cinds[oc, "xs"]
 ys <- cinds[oc, "ys"]
 imasses <- rep(0, nrow(cinds))
-imasses[oc] <- oc_masses # individual component masses
-cmasses <- rep(0, nrow(cinds)) # cumulative connected component masses
+imasses[oc] <- oc_masses                           # individual component masses
+cmasses <- rep(0, nrow(cinds))                     # cumulative connected component masses
 for (n in 1:length(ccs)) {
     cc_inds <- connected_comps_inds(i=ccs[n],C=C,nsize=nsize)
     cmasses[cc_inds] <- cmasses[cc_inds] + cc_masses[n]
 }
-qmass <- imasses + cmasses # quadrat mass (cc + ic)
-text(xs, ys, labels = round(qmass[qmass > 0], 4)) # total weight of quadrats to figure
-cc_lines(cc=ccs, C=C, nsize=nsize) # add cc lines
+qmass <- imasses + cmasses                         # quadrat mass (cc + ic)
+text(xs, ys, labels = round(qmass[qmass > 0], 4))  # total weight of quadrats to figure
+cc_lines(cc=ccs, C=C, nsize=nsize)                 # add cc lines
 cc_info(CC=ccs, CC_masses=cc_masses, C=C, nsize=nsize)
 
 ## Add line outside of quadrats and text for CC
 cc_info <- function(CC, CC_masses, C=C, nsize=nsize) {
-    require(scales) # for alpha
-    inds <- component_indices(nsize = nsize) # indices of outer ring
+    require(scales)                                      # for alpha
+    inds <- component_indices(nsize = nsize)             # indices of outer ring
     for (c in 1:length(CC)) {
-        orient <- ceiling(CC[c] / (sqrt(nsize)-1)) %% 2 # horizontal orientation
-        yoff <- xoff <- 0 # offets for CC line
+        orient <- ceiling(CC[c] / (sqrt(nsize)-1)) %% 2  # horizontal orientation
+        yoff <- xoff <- 0                                # offets for CC line
         if (orient == 1)
             ifelse(inds[CC[c],"ys"] > 0, { yoff <- .6 }, { yoff <- -.6 })
         if (orient == 0)
@@ -273,13 +273,16 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
                        size=NM$variable[i, 1:num_nebs])
 
     ## Compute neighborhood values
-    oc <- components_occupied(cbind(nbrs$x,nbrs$y), nsize=nsize) # indices of occupied components
-    ccs <- connected_comps_occupied(oc=oc, nsize=nsize, C=C) # indices of occupied connected components
-    oc_masses <- component_masses(oc=oc, alpha=alpha, beta=beta, theta=theta, nbrhood=nbrs,
-                                  nsize=9) # individual component masses
-    cc_masses <- connected_comps_masses(oc_masses=oc_masses, ccs=ccs, C=C, nsize=9) # connected component masses
-    nsind <- nsi(nbrs=nbrs, C=C, alpha=alpha, beta=beta, theta=theta, nsize=9)
-    cinds <- component_indices(nsize)
+    oc         <-           # indices of occupied components
+        components_occupied(cbind(nbrs$x,nbrs$y), nsize=nsize)
+    ccs        <-           # indices of occupied connected components
+        connected_comps_occupied(oc=oc, nsize=nsize, C=C)
+    oc_masses  <-           # individual component masses
+        component_masses(oc=oc, alpha=alpha, beta=beta, theta=theta, nbrhood=nbrs, nsize=9)
+    cc_masses  <-           # connected component masses
+        connected_comps_masses(oc_masses=oc_masses, ccs=ccs, C=C, nsize=9)
+    nsind      <- nsi(nbrs=nbrs, C=C, alpha=alpha, beta=beta, theta=theta, nsize=9)
+    cinds      <- component_indices(nsize)
 
     if (together)
         dev.new()
@@ -289,8 +292,8 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     ttl <- paste(nsize, "Quadrat Neighborhood Layout")
     draw_empty(nsize, title = ttl, numbers = "neighborhood")
     glines(nsize)
-    cc_lines(cc=1:(nsize-1), C=C, nsize=nsize) # add connected component bars
-    cc_ellipse(cc=1:(nsize-1), C=C, nsize=nsize) # add connected component ellipses
+    cc_lines(cc=1:(nsize-1), C=C, nsize=nsize)    # add connected component bars
+    cc_ellipse(cc=1:(nsize-1), C=C, nsize=nsize)  # add connected component ellipses
 
     ## Neighborhood grid with neighbor points
     if (!together)
@@ -320,24 +323,24 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     xs <- cinds[oc, "xs"]
     ys <- cinds[oc, "ys"]
     imasses <- rep(0, nrow(cinds))
-    imasses[oc] <- oc_masses # individual component masses
-    cmasses <- rep(0, nrow(cinds)) # cumulative connected component masses
+    imasses[oc] <- oc_masses                                 # individual component masses
+    cmasses <- rep(0, nrow(cinds))                           # cumulative connected component masses
     for (n in 1:length(ccs)) {
         cc_inds <- connected_comps_inds(i=ccs[n],C=C,nsize=nsize)
         cmasses[cc_inds] <- cmasses[cc_inds] + cc_masses[n]
     }
-    qmass <- imasses + cmasses # quadrat mass (cc + ic)
-    text(xs, ys, labels = round(qmass[qmass > 0], 4)) # total weight of quadrats to figure
-    cc_lines(cc=ccs, C=C, nsize=nsize) # add CC lines
-    cc_info(CC=ccs, CC_masses=cc_masses, C=C, nsize=nsize) # add CC info
+    qmass <- imasses + cmasses                               # quadrat mass (cc + ic)
+    text(xs, ys, labels = round(qmass[qmass > 0], 4))        # total weight of quadrats to figure
+    cc_lines(cc=ccs, C=C, nsize=nsize)                       # add CC lines
+    cc_info(CC=ccs, CC_masses=cc_masses, C=C, nsize=nsize)   # add CC info
     text(0,0, round(nsind, 4), font=2)
 
     ## Image of neighborhood (pixel intensity by quadrat MASS)
     dev.new()
     side_length <- sqrt(nsize)
     mat <- matrix(NA, side_length, side_length)
-    img_oc <- imgorder(oc) # image ordered occupied components
-    img_cc <- imgorder(ccs) # image ordered occupied connected components
+    img_oc <- imgorder(oc)   # image ordered occupied components
+    img_cc <- imgorder(ccs)  # image ordered occupied connected components
     mat[img_oc] <- oc_masses
     levelplot(mat, main = "Masses of individual components")
 
