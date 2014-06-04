@@ -26,7 +26,8 @@ source("~/work/functions/functions-neighborhood.R")
 ##    whether a neighbor is included in the neighborhood analysis)
 ## - spec: species of targets we are interested in (all species are used as neighbors)
 nsize <- 9
-alpha <- beta <- theta <- 1
+alpha <- beta <- 1
+theta <- .05
 C <- 2
 dep.var <- "bagrowth"
 ind.var <- "ba"
@@ -40,7 +41,7 @@ sr <- side_length - 1
 ##
 ## Real data:
 ##
-pp <- read.csv("~/work/data/data/dynamicallometry/moose-long-canopies.csv")
+pp <- read.csv("~/work/data/moose/moose-long.csv")
 pnum <- 9
 dat <- subset(pp, pplot %in% c(pnum))
 
@@ -62,7 +63,8 @@ num_nebs <- abba_mats$number_neighbors[i]
 nbrs <- data.frame(x=abba_mats$direction_x[i:num_nebs],
                    y=abba_mats$direction_y[i:num_nebs],
                    distance=abba_mats$distances[i:num_nebs],
-                   size=abba_mats$variable[i:num_nebs])
+                   size=abba_mats$variable[i:num_nebs],
+                   z=abba_mats$direction_z[i:num_nebs])
 
 nsi(nbrs=nbrs, C=C, alpha = alpha, beta = beta, theta = theta, nsize = 9)
 

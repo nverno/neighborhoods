@@ -126,6 +126,47 @@ draw_empty <- function(nsize=9, title="", numbers="none") {
     }
 }
 
+## Add compass directions
+compass_lines <- function(nsize=9) {
+    disp <- (sqrt(nsize)-1) / 2 + 1  # displacement from origin to draw text
+    text(c(-disp,-disp,disp,disp), c(-disp,disp,disp,-disp),
+         labels = c("N","E","S","W"), font=2, cex = 2)
+}
+
+## Rotate point about origin by angle
+## - x,y are initial point
+## - angle is angle to rotate in degrees (counterclockwise)
+rotate_point <- function(x, y, theta_r) {
+    theta_r <- theta_r * pi/180 # theta in radians
+    rot <- matrix(c(cos(theta_r), sin(theta_r), -sin(theta_r), cos(theta_r)),
+                  nrow = 2, ncol=2)
+    p <- matrix(c(x,y))
+    return ( rot %*% p )
+}
+
+## Add slope/aspect
+## - arguments in degrees
+## - Solid line above 0, dotted below 0
+## - Adds an orthogonal line where plot is level with origin
+slopeasp_lines <- function(asp, slp=NULL, nsize=9, addtext=TRUE) {
+    disp <- (sqrt(nsize)-1) / 2 + 1  # displacement from origin to draw text
+    aspect <- rotate_point(-1,-1,360-asp)
+    lines(c(0,disp*aspect[1]), c(0, disp*aspect[2]),
+          lwd = 3, col = "purple", lty=2) # downslope direction
+    lines(c(0,-disp*aspect[1]), c(0, -disp*aspect[2]),
+          lwd = 3, col = "purple", lty=1) # upslope direction
+    ## Add orthogonal line
+    ortho <- rotate_point(aspect[1],aspect[2],90)
+    abline(a=0, b=ortho[2]/ortho[1], col="purple", lwd=1)
+    if (!missing(slp)) {
+        ## Add slope as text in center
+        text(0,disp-.3, labels = paste("Slope:",slp), font=2)
+    }
+    if (addtext) {
+        ## Add text saying what the aspect is
+        text(0,disp, labels = paste("Aspect:",asp), font=2)
+    }
+}
 
 ################################################################################
 ##
@@ -137,6 +178,11 @@ draw_empty <- function(nsize=9, title="", numbers="none") {
 ################################################################################
 library(plotrix)
 library(scales)
+
+draw_empty()
+glines()
+slopeasp_lines(asp=67, slp=33)
+compass_lines()
 
 ## Neighborhood grid with connected components shown, connected component size and
 ##   neighborhood size specified
@@ -267,10 +313,13 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     require(lattice)
     i <- tree
     num_nebs <- NM$number_neighbors[i]
+    slope <- round(NM$slope)
+    aspect <- NM$aspect
     nbrs <- data.frame(x=NM$direction_x[i, 1:num_nebs],
                        y=NM$direction_y[i, 1:num_nebs],
                        distance=NM$distances[i, 1:num_nebs],
-                       size=NM$variable[i, 1:num_nebs])
+                       size=NM$variable[i, 1:num_nebs],
+                       z=NM$direction_z[i, 1:num_nebs])
 
     ## Compute neighborhood values
     oc         <-           # indices of occupied components
@@ -298,17 +347,22 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     ## Neighborhood grid with neighbor points
     if (!together)
         dev.new()
-    ttl <- paste("Neighborhood for tree", i, "in pplot", pnum, "from year", abba_mats$yr[i])
+    ttl <- paste("Neighborhood for tree", i, "in pplot", pnum, "from year", NM$yr[i])
     draw_empty(nsize, title=ttl)
-    glines()
+    glines(nsize)
+    compass_lines(nsize)
+    slopeasp_lines(asp=aspect, slp=slope, nsize=nsize)
     points(jitter(nbrs$x), jitter(nbrs$y), pch=24, cex=2, col="red", bg="dark green")
+
 
     ## - Grid of neighborhood with quadrat mass values
     if (!together)
         dev.new()
-    ttl <- paste("Individual Component Masses\n for tree", i, "in pplot", pnum, "from year", abba_mats$yr[i])
+    ttl <- paste("Individual Component Masses\n for tree", i, "in pplot", pnum, "from year", NM$yr[i])
     draw_empty(nsize, title=ttl)
-    glines()
+    glines(nsize)
+    compass_lines(nsize)
+    slopeasp_lines(asp=aspect, slp=slope, nsize=nsize)
     xs <- cinds[oc, "xs"]
     ys <- cinds[oc, "ys"]
     text(xs, ys, labels = round(oc_masses, 4))
@@ -317,9 +371,11 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     ## - Grid of neighborhood with complete mass values (individual + connected components)
     if (!together)
         dev.new()
-    ttl <- paste("Total Component Masses\n for tree", i, "in pplot", pnum, "from year", abba_mats$yr[i])
+    ttl <- paste("Total Component Masses\n for tree", i, "in pplot", pnum, "from year", NM$yr[i])
     draw_empty(nsize, title=ttl)
-    glines()
+    glines(nsize)
+    compass_lines(nsize)
+    slopeasp_lines(asp=aspect, slp=slope, nsize=nsize)
     xs <- cinds[oc, "xs"]
     ys <- cinds[oc, "ys"]
     imasses <- rep(0, nrow(cinds))
@@ -356,7 +412,7 @@ showNSI(tree=2, NM=abba_mats, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
 
 
 ## Get all the NSIs
-nsis <- rep(NA, nrow(abba_mats$distances))
+nsis <- rep(NA, nrow(NM$distances))
 NM <- abba_mats
 for (i in 1:length(nsis)) {
     num_nebs <- NM$number_neighbors[i]
@@ -369,4 +425,3 @@ for (i in 1:length(nsis)) {
     nsis[i] <- nsind
 }
 
-xs <-
