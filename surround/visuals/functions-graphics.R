@@ -141,6 +141,7 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     require(scales)
     require(lattice)
     i <- tree
+    tag <- NM$id[i]
     num_nebs <- NM$number_neighbors[i]
     slope <- round(NM$slope)
     aspect <- NM$aspect
@@ -162,9 +163,9 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     nsind      <- nsi(nbrs=nbrs, C=C, alpha=alpha, beta=beta, theta=theta, nsize=nsize)
     cinds      <- component_indices(nsize)
 
-    if (together)
-        dev.new()
-        par(mfrow = c(2,2))
+    ## if (together)
+    ##     dev.new()
+    par(mfrow = c(2,2))
 
     ## Summary graphics to show components in this size neighborhood and numberings
     ttl <- paste(nsize, "Quadrat Neighborhood Layout")
@@ -174,9 +175,9 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
     cc_ellipse(cc=1:(nsize-1), C=C, nsize=nsize)  # add connected component ellipses
 
     ## Neighborhood grid with neighbor points
-    if (!together)
-        dev.new()
-    ttl <- paste("Neighborhood for tree", i, "in pplot", pnum, "from year", NM$yr[i])
+    ## if (!together)
+    ##     dev.new()
+    ttl <- paste("Neighborhood for tree", tag, "in pplot", pnum, "from year", NM$yr[i])
     draw_empty(nsize, title=ttl)
     glines(nsize)
     compass_lines(nsize)
@@ -185,9 +186,9 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
 
 
     ## - Grid of neighborhood with quadrat mass values
-    if (!together)
-        dev.new()
-    ttl <- paste("Individual Component Masses\n for tree", i, "in pplot", pnum, "from year", NM$yr[i])
+    ## if (!together)
+    ##     dev.new()
+    ttl <- paste("Individual Component Masses\n for tree", tag, "in pplot", pnum, "from year", NM$yr[i])
     draw_empty(nsize, title=ttl)
     glines(nsize)
     compass_lines(nsize)
@@ -198,40 +199,35 @@ showNSI <- function(tree, NM, nsize=9, C=2, alpha=1, beta=1, theta=1, together=T
         text(xs, ys, labels = round(oc_masses, 4))
 
     ## - Grid of neighborhood with complete mass values (individual + connected components)
-    if (!together)
-        dev.new()
-    ttl <- paste("Total Component Masses\n for tree", i, "in pplot", pnum, "from year", NM$yr[i])
+    ## if (!together)
+    ##     dev.new()
+    ttl <- paste("Total Component Masses\n for tree", tag, "in pplot", pnum, "from year", NM$yr[i])
     draw_empty(nsize, title=ttl)
     glines(nsize)
     compass_lines(nsize)
     slopeasp_lines(asp=aspect, slp=slope, nsize=nsize)
     xs <- cinds[oc, "xs"]
     ys <- cinds[oc, "ys"]
-    imasses <- rep(0, nrow(cinds))
-    imasses[oc] <- oc_masses                                 # individual component masses
-    cmasses <- rep(0, nrow(cinds))                           # cumulative connected component masses
-    if (length(ccs) > 0) {
-        for (n in 1:length(ccs)) {
-            cc_inds <- connected_comps_inds(i=ccs[n],C=C,nsize=nsize)
-            cmasses[cc_inds] <- cmasses[cc_inds] + cc_masses[n]
-        }
-    }
-    qmass <- imasses + cmasses                                   # quadrat mass (cc + ic)
-    if(any(qmass>0))
-        text(xs, ys, labels = round(qmass[qmass > 0], 4))        # total weight of quadrats to figure
+    qmass <- rep(0, nrow(cinds)) # holds quadrat masses
+    names(qmass) <- 1:nrow(cinds)
+    qmass[oc] <- oc_masses                                     # add indiv. component masses
+    qmass[as.numeric(names(cc_masses))] <-
+        qmass[as.numeric(names(cc_masses))] + cc_masses        # add cc masses
+    if(any(qmass != 0))
+        text(xs, ys, labels = round(qmass[qmass != 0], 4))        # total weight of quadrats to figure
     cc_lines(cc=ccs, C=C, nsize=nsize)                           # add CC lines
     if (length(ccs) > 0)
         cc_info(CC=ccs, CC_masses=cc_masses, C=C, nsize=nsize)   # add CC info
     text(0,0, round(nsind, 4), font=2)
 
     ## Image of neighborhood (pixel intensity by quadrat MASS)
-    if (heat) {
-        dev.new()
-        side_length <- sqrt(nsize)
-        mat <- matrix(NA, side_length, side_length)
-        img_oc <- imgorder(oc)   # image ordered occupied components
-        img_cc <- imgorder(ccs)  # image ordered occupied connected components
-        mat[img_oc] <- oc_masses
-        levelplot(mat, main = "Masses of individual components")
-    }
+    ## if (heat) {
+    ##     dev.new()
+    ##     side_length <- sqrt(nsize)
+    ##     mat <- matrix(NA, side_length, side_length)
+    ##     img_oc <- imgorder(oc)   # image ordered occupied components
+    ##     img_cc <- imgorder(ccs)  # image ordered occupied connected components
+    ##     mat[img_oc] <- oc_masses
+    ##     levelplot(mat, main = "Masses of individual components")
+    ## }
 }

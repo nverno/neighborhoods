@@ -42,8 +42,8 @@ setup <- function(pnum, yr, spec="ABBA", sr=2, dep.var="bagrowth", ind.var="ba",
 ################################################################################
 plot_level <- function(pnum, yr, nsis, NM, dat) {
     ## NSI distribution
-    dev.new()
-    ttl <- paste("NSI Distribution for plot",pnum,", year",yr)
+    ## dev.new()
+    ttl <- paste("NSI Distribution for plot", pnum,", year", yr)
     hist(nsis, main=ttl)
 
     ## 3d showing slope/aspect
@@ -53,7 +53,7 @@ plot_level <- function(pnum, yr, nsis, NM, dat) {
     ## showslope(slope = slope, aspect = aspect)
 
     ## Scatter points scaled by NSI
-    dev.new()
+    ## dev.new()
     samp <- dat[dat$time==yr & dat$pplot == pnum,]
     samp <- samp[samp$id %in% NM$id,]
     samp <- samp[order(NM$id),]
@@ -66,3 +66,25 @@ plot_level <- function(pnum, yr, nsis, NM, dat) {
     abline(h=0,v=0)
 }
 
+
+## Show target and species of neighbors
+## Target is outlined by a circle
+target_tree <- function(id, dat, pnum, yr, NM) {
+    require(ggplot2)
+    ## Scatter points colored by neighbor, scaled by size
+    samp <- dat[dat$time==yr & dat$pplot == pnum & !is.na(dat$y)
+                & !is.na(dat$x),]
+    samp$targ <- factor(rep(1, nrow(samp)), levels = c(1,4))
+    samp[samp$id == id, "targ"] <- 4
+    xc <- samp[samp$id == id, "x"]
+    yc <- samp[samp$id == id, "y"]
+    r <- 0.5
+
+    ttl <- paste("Tree", id, ", plot", pnum,", year",yr)
+    ggplot(samp, aes(x, y, color=spec, shape = targ, size = ba)) + geom_jitter() +
+        annotate("path", x = xc + r*cos(seq(0, 2*pi, length.out=100)),
+                 y= yc + r*sin(seq(0, 2*pi, length.out=100)), color = "blue") +
+                     ggtitle(ttl) +
+                         geom_hline(aes(0,0)) + geom_vline(aes(0,0))
+
+}

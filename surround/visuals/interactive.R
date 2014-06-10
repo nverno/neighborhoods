@@ -5,8 +5,8 @@
 ################################################################################
 source("~/work/functions/functions-neighborhood.R")
 source("~/work/neighborhoods/surround/functions.R")
-source("~/work/neighborhoods/surround/visuals/functions-graphics.R")
-source("~/work/neighborhoods/surround/visuals/functions-interactive.R")
+source("~/work/neighborhoods/surround/test/functions-graphics.R")
+source("~/work/neighborhoods/surround/test/functions-interactive.R")
 source("~/work/ecodatascripts/vars/z-values/functions.R")
 
 ## Choose plot number and year to look at
@@ -38,7 +38,7 @@ for (i in 1:length(nsis)) {
 
 ## Dump objects to send to RStudi-udi-0h
 dump(list=c("pnum","yr","nsize","C","alpha","beta","theta","NM","nsis"),
-     file="~/work/neighborhoods/surround/visuals/rstudio/data.R")
+     file="~/work/neighborhoods/surround/test/matrices.R")
 
 ################################################################################
 ##

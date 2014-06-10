@@ -72,9 +72,11 @@ connected_comps_masses <- function(oc_masses, ccs, C, nsize = 9) {
         return ( NULL )
     num_outer <- nouter(nsize)
     cc_masses <- sapply(1:length(ccs), function(i) {
-        iseq <- connected_comps_inds(i,C,nsize)
-        sum( oc_masses[iseq] ) # sum the occupied component masses
+        iseq <- connected_comps_inds(ccs[i],C,nsize)
+        ii <- which(names(oc_masses) == iseq)
+        sum( oc_masses[ii] ) # sum the occupied component masses
     })
+    names(cc_masses) <- ccs
     return ( cc_masses )
 }
 
@@ -90,8 +92,10 @@ component_masses <- function(oc, alpha, beta, theta, nbrhood, nsize=9) {
     masses <- sapply(oc, function(i) {
         inds <- comps[i,] # indices of occupied component
         nebs <- nbrhood[nbrhood$x == inds[1] & nbrhood$y == inds[2], ] # neighbors occupying component
-        sum( theta*nebs$z ) + sum( nebs$size^alpha / nebs$distance^beta )
+        theta_1 <- ifelse(theta<0, 1/theta, theta)
+        theta_1^unique(nebs$z) + sum( nebs$size^alpha / nebs$distance^beta )
     })
+    names(masses) <- oc
     return ( masses )
 }
 
