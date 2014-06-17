@@ -1,0 +1,6 @@
+## Estimating parameters for surround index model
+
+### Using growth as predicted variable
+
+### Using hazard as predicted variable
+

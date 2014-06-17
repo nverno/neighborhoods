@@ -50,8 +50,8 @@ nsi <- function(nbrs, C, alpha, beta, theta, nsize = 9) {
     num_outer <- nouter(nsize)
     oc <- components_occupied(nbrs=cbind(nbrs$x,nbrs$y), nsize=nsize) # indices of occupied components
     ccs <- connected_comps_occupied(oc=oc, nsize=nsize, C=C) # indices of occupied connected components
-    oc_masses <- component_masses(oc=oc, alpha=alpha, beta=beta,
-                                  theta=theta, nbrhood=nbrs, nsize=nsize) # individual component masses
+    oc_masses <- component_masses(oc=oc, alpha = alpha, beta = beta,
+                                  theta = theta, nbrhood=nbrs, nsize=nsize) # individual component masses
     ifelse(length(ccs) > 0,
        { cc_masses <- connected_comps_masses(oc_masses=oc_masses, ccs=ccs, C=C,
                                              nsize=nsize) }, # connected component masses
