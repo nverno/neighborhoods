@@ -33,9 +33,7 @@ sr <- side_length - 1
 ##
 ## Real data:
 ##
-pp <- read.csv("~/work/data/moose/moose-long.csv")
-pnum <- 9
-dat <- subset(pp, pplot %in% c(pnum))
+dat <- read.csv("~/work/data/moose/moose-long.csv")
 
 ## define targets and neighbors
 targets <- subset(dat, bqudx < (12-sr) & bqudx > (-1 + sr) & bqudy < (12 - sr) &
@@ -47,40 +45,18 @@ grew <- which(!is.na(targets[,dep.var]) & targets$spec==spec & targets[,dep.var]
 abbas <- targets[grew,]
 
 ## make neighbor matrices using square radius (i.e bqudx,bqudy)
-abba_mats <- mnm(abbas, neighbors, sr, ind.var=ind.var)
+## abba_mats <- mnm(abbas, neighbors, sr, ind.var=ind.var)
 
 ## compute nsi
-i <- 1
-num_nebs <- abba_mats$number_neighbors[i]
-nbrs <- data.frame(x=abba_mats$direction_x[i:num_nebs],
-                   y=abba_mats$direction_y[i:num_nebs],
-                   distance=abba_mats$distances[i:num_nebs],
-                   size=abba_mats$variable[i:num_nebs],
-                   z=abba_mats$direction_z[i:num_nebs])
+## i <- 1
+## num_nebs <- abba_mats$number_neighbors[i]
+## nbrs <- data.frame(x=abba_mats$direction_x[i:num_nebs],
+##                    y=abba_mats$direction_y[i:num_nebs],
+##                    distance=abba_mats$distances[i:num_nebs],
+##                    size=abba_mats$variable[i:num_nebs],
+##                    z=abba_mats$direction_z[i:num_nebs])
 
-nsi(nbrs=nbrs, C=C, alpha = alpha, beta = beta, theta = theta, nsize = 9)
-
-## R wrapper for whole process
-mnm <- function(targets, neighbors, sr, ind.var = "ba") {
-    maxn <- maxnebs_disc(targets = targets$id, neighbors = neighbors$id,
-                         plots = neighbors$pplot, stat = neighbors$stat,
-                         bqudx = neighbors$bqudx, bqudy = neighbors$bqudy,
-                         time = neighbors$time, sr = sr)
-
-    neighbors$spec <- as.integer(neighbors$spec)
-    slp <- unique(neighbors[!is.na(neighbors$slope), "slope"])
-    asp <- unique(neighbors[!is.na(neighbors$asp), "asp"])
-    matrices <- mnmRcpp(targets = targets$id, targtimes = targets$time,
-                        neighbors = neighbors$id,
-                        plots = neighbors$pplot, spp = neighbors$spec,
-                        stat = neighbors$stat, bqudx = neighbors$bqudx,
-                        bqudy = neighbors$bqudy, time = neighbors$time,
-                        variable = neighbors[,ind.var], sr = sr, maxn = maxn,
-                        z = neighbors$z, slp = slp, asp = asp)
-
-    return ( matrices )
-}
-
+## nsi(nbrs=nbrs, C=C, alpha = alpha, beta = beta, theta = theta, nsize = 9)
 
 ## Create neighborhood matrices by plot
 ## Returns a list of neighborhood matrices for each plot
@@ -125,6 +101,20 @@ mnm_plot<- function(targets, neighbors, sr, ind.var = "ba") {
 
     names(matlst) <- unique(targets$pplot)
     matlst
+}
+
+## Create list neighborhood matrices, combined across all plots
+## The main work is done by mnm_plot
+mnm_agg <- function(targets, neighbors, sr, ind.var = "ba") {
+    matlst <- mnm_plot(targets, neigbors, sr, ind.var)
+
+    ## Find max number of neighbors across all plots
+    maxneb <- max( sapply(matlst, FUN = function(pp) dim(pp[["distances"]])[[2]] ) )
+
+    ## Fill matrices with NAs to be same dimensions
+    matinds <- which(names(matlst[[1]]) %in% c("direction_x", "direction_y", "direction_z",
+                          "distances", "variable", "species", "neighbor_id"))
+
 }
 
     ## Join the plot-level neighborhood matrices into new list of matrices
