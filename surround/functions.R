@@ -46,7 +46,7 @@ connected_comps <- function(C, nsize=9) {
 ## - C: number of quadrats that form a connected component
 ## - alpha, beta: parameters in neighbor mass calculation
 ## - theta: parameters for slope/aspect
-nsi <- function(nbrs, C, alpha, beta, theta, nsize = 9) {
+nsi <- function(nbrs, C, alpha, beta, theta, nsize = 9, ...) {
     num_outer <- nouter(nsize)
     oc <- components_occupied(nbrs=cbind(nbrs$x,nbrs$y), nsize=nsize) # indices of occupied components
     ccs <- connected_comps_occupied(oc=oc, nsize=nsize, C=C) # indices of occupied connected components
@@ -73,7 +73,7 @@ connected_comps_masses <- function(oc_masses, ccs, C, nsize = 9) {
     num_outer <- nouter(nsize)
     cc_masses <- sapply(1:length(ccs), function(i) {
         iseq <- connected_comps_inds(ccs[i],C,nsize)
-        ii <- which(names(oc_masses) == iseq)
+        ii <- which(names(oc_masses) %in% iseq)
         sum( oc_masses[ii] ) # sum the occupied component masses
     })
     names(cc_masses) <- ccs

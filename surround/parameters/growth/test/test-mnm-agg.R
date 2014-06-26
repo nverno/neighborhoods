@@ -168,3 +168,4 @@ if(all(valChecks)){
 } else {
     cat("Failed\n")
 }
+

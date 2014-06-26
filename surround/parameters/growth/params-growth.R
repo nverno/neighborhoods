@@ -153,12 +153,68 @@ mnm_agg <- function(targets, neighbors, sr, ind.var = "ba") {
 }
 
 
-# helper functions to retrieve model name/ind.var from global environment
-#  for internal calls
+## Compute nsi for each row of neighborhoods matrices
+## - INPUT:
+##  - mnmagg: aggregated neighborhood matrics
+##  - nPars: neighborhood parameters
+nsi_agg <- function(mnmagg, nPars, ...) {
+    nsis <-  sapply(1:nrow(mnmagg[["distances"]]), FUN = function(row) {
+        nbrs <- data.frame(x = mnmagg[["direction_x"]][row,],
+                           y = mnmagg[["direction_y"]][row,],
+                           z = mnmagg[["direction_z"]][row,],
+                           distance = mnmagg[["distances"]][row,],
+                           size = mnmagg[["variable"]][row,])
+        nbrs <- nbrs[complete.cases(nbrs), ]
+        nPars$nbrs <- nbrs
+        do.call(nsi, args = nPars)
+    })
+
+    return ( nsis )
+}
+
+
+################################################################################
+##
+##                          Size Logistic NSI Model
+##
+################################################################################
+slnsi <- function(ps, ind.var="priorba")
+{
+    ## Size parameters
+    PG = ps[["PG"]]
+    sizeX0 = ps[["sizeX0"]]
+    sizeXb = ps[["sizeXb"]]
+
+    ## Surround parameters
+    sur0 = ps[["sur0"]]
+    sur1 = ps[["sur1"]]
+
+    ## Neighborhood parameters
+    alpha = ps[["alpha"]]
+    beta = ps[["beta"]]
+    theta = ps[["theta"]]
+    C = ps[["C"]]
+    nsize = ps[["nsize"]]
+
+    nsis <- nsi_agg(mnmagg, ps)
+    sizeEff <- exp(-0.5*(log(abbas[,ind.var]/sizeX0)/sizeXb)^2)
+    surroundEff <- exp( -sur0 * nsis^sur1 )
+    PG * sizeEff * surroundEff
+}
+
+
+################################################################################
+##
+##                                MLE Fitting
+##
+################################################################################
+require(bbmle)
+
+## helpers
 get.model <- function() { mod <- get("currentmodel"); mod }
 get.ind.var <- function() { get("ind.var") }
 
-# log.likelihood function
+# log likelihood function expecting normal distribution of residuals
 normNLL <- function(params, x, currentmodel=NULL) {
     if(missing(currentmodel)) { currentmodel <- get.model() }
     sd = params[["sd"]]
@@ -167,26 +223,31 @@ normNLL <- function(params, x, currentmodel=NULL) {
     -sum(dnorm(x, mean = mu, sd = sd, log = TRUE))
 }
 
-# size logistic nci model
-slnm <- function(ps, ind.var="priorba")
-{
-    PG = ps[["PG"]]
-    sizeX0 = ps[["sizeX0"]]
-    sizeXb = ps[["sizeXb"]]
-    alpha = ps[["alpha"]]
-    beta = ps[["beta"]]
-    C = ps[["C"]]
-    D = ps[["D"]]
-    size.effect <- exp(-0.5*(log(targets[,ind.var]/sizeX0)/sizeXb)^2)
-    nsi <-
-    nci <- rowSums(((bas ^ alpha)/(distances ^ beta)), na.rm=TRUE)
-    competition.effect <- exp(-(C) * nci^D)
-    PG * size.effect * competition.effect
-}
+## Parameters
+ps <- list(
+    ## Size pars
+    PG = 1, sizeX0 = 1, sizeXb = 1,
 
-surround_growth <- function(ps, ind.var = "priorba") {
+    ## Surround pars
+    sur0 = 1, sur1 = 1,
 
-}
+    ## Neighborhood pars
+    C = C, alpha = alpha , beta = beta, theta = theta, nsize = 9,
+
+    ## Standard deviation
+    sd = 1)
+
+## Fitting parameters
+method <- "Nelder-Mead"
+maxit <- 100
+currentmodel <- "slnsi"
+parnames(normNLL) <- c(names(ps))
+fit2 <- mle2(normNLL,
+             start = unlist(ps,recursive = FALSE),
+             data = list(x = abbas[,dep.var]),
+             method = method,
+             control = list(maxit = maxit))
+
 
 
 ### Automated fitting of neighborhood models by MLE
