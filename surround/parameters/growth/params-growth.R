@@ -178,7 +178,8 @@ nsi_agg <- function(mnmagg, nPars, ...) {
 ##                          Size Logistic NSI Model
 ##
 ################################################################################
-slnsi <- function(ps, ind.var="priorba")
+## Assumes neighbor matrices are named "nm" and targets are names "targets"
+slnsi <- function(ps, nm, targets, ind.var="priorba")
 {
     ## Size parameters
     PG = ps[["PG"]]
@@ -193,11 +194,10 @@ slnsi <- function(ps, ind.var="priorba")
     alpha = ps[["alpha"]]
     beta = ps[["beta"]]
     theta = ps[["theta"]]
-    C = ps[["C"]]
-    nsize = ps[["nsize"]]
 
-    nsis <- nsi_agg(mnmagg, ps)
-    sizeEff <- exp(-0.5*(log(abbas[,ind.var]/sizeX0)/sizeXb)^2)
+    nPars <- ps[names(ps) %in% c("alpha", "beta", "theta")]
+    nsis <- nsi_agg(nm, c(list(C = 2, nsize = 9), nPars))
+    sizeEff <- exp(-0.5*(log(targets[,ind.var]/sizeX0)/sizeXb)^2)
     surroundEff <- exp( -sur0 * nsis^sur1 )
     PG * sizeEff * surroundEff
 }
@@ -215,13 +215,18 @@ get.model <- function() { mod <- get("currentmodel"); mod }
 get.ind.var <- function() { get("ind.var") }
 
 # log likelihood function expecting normal distribution of residuals
-normNLL <- function(params, x, currentmodel=NULL) {
+normNLL <- function(params, x, targets, nm, currentmodel=NULL) {
     if(missing(currentmodel)) { currentmodel <- get.model() }
     sd = params[["sd"]]
     ind.var <- get.ind.var()
-    mu = do.call(currentmodel, list(params,ind.var))
+    mu = do.call(currentmodel, list(params, targets = targets, nm = nm, ind.var))
     -sum(dnorm(x, mean = mu, sd = sd, log = TRUE))
 }
+
+## Test data
+targs <- abbas[abbas$pplot %in% c(4,5), ]
+nebs <- neighbors[neighbors$pplot %in% c(4,5), ]
+nm <- mnm_agg(targs, nebs, sr, ind.var)
 
 ## Parameters
 ps <- list(
@@ -232,22 +237,21 @@ ps <- list(
     sur0 = 1, sur1 = 1,
 
     ## Neighborhood pars
-    C = C, alpha = alpha , beta = beta, theta = theta, nsize = 9,
+    alpha = alpha , beta = beta, theta = theta,
 
     ## Standard deviation
     sd = 1)
 
 ## Fitting parameters
 method <- "Nelder-Mead"
-maxit <- 100
+maxit <- 10
 currentmodel <- "slnsi"
 parnames(normNLL) <- c(names(ps))
 fit2 <- mle2(normNLL,
-             start = unlist(ps,recursive = FALSE),
-             data = list(x = abbas[,dep.var]),
+             start = unlist(ps, recursive = FALSE),
+             data = list(x = targs[, dep.var], targets = targs, nm = nm),
              method = method,
              control = list(maxit = maxit))
-
 
 
 ### Automated fitting of neighborhood models by MLE
