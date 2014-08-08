@@ -144,3 +144,24 @@ nouter <- function(nsize=9) {
     num_outer <- side_length + 2 * (side_length-1) + (side_length-2)
     return ( num_outer )
 }
+
+                                        #
+                                        # Compute nsi for each row of neighborhoods matrices
+## - INPUT:
+##  - mnmagg: aggregated neighborhood matrices
+##  - nPars: neighborhood parameters
+nsi_agg <- function(mnmagg, nPars, ...) {
+    nsis <-  sapply(1:nrow(mnmagg[["distances"]]), FUN = function(row) {
+        nbrs <- data.frame(x = mnmagg[["direction_x"]][row,],
+                           y = mnmagg[["direction_y"]][row,],
+                           z = mnmagg[["direction_z"]][row,],
+                           distance = mnmagg[["distances"]][row,],
+                           size = mnmagg[["variable"]][row,])
+        nbrs <- nbrs[complete.cases(nbrs), ]
+        nPars$nbrs <- nbrs
+        do.call(nsi, args = nPars)
+    })
+
+    return ( nsis )
+}
+
