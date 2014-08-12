@@ -145,8 +145,7 @@ nouter <- function(nsize=9) {
     return ( num_outer )
 }
 
-                                        #
-                                        # Compute nsi for each row of neighborhoods matrices
+## Compute nsi for each row of neighborhoods matrices
 ## - INPUT:
 ##  - mnmagg: aggregated neighborhood matrices
 ##  - nPars: neighborhood parameters

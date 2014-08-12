@@ -35,15 +35,15 @@ nPars <- list(C=2, nsize=9, alpha=1, beta=1, theta=1.05)
 dat <- read.csv("~/work/data/moose/moose-long.csv")
 
 ## define targets and neighbors
+## Use ABBAs that have a positive basal area growth as targets
+## Neighbors are all species but must have status of ALIVE and be within normal plot
+##  coordinates
 targs <- subset(dat, spec == "ABBA" & !is.na(dat[,dep.var]) & dat[,dep.var] > 0)
+## targets <- subset(dat, bqudx < (12-sr) & bqudx > (-1 + sr) & bqudy < (12 - sr) &
+##                   bqudy > (-1 + sr) & stat=="ALIVE")
 
-targets <- subset(dat, bqudx < (12-sr) & bqudx > (-1 + sr) & bqudy < (12 - sr) &
-                  bqudy > (-1 + sr) & stat=="ALIVE")
 neighbors <- subset(dat, bqudx < 11 & bqudx > 0 & bqudy < 11 &
                     bqudy > 0 & stat=="ALIVE")
-## remove trees that dont satisfy certain conditions
-grew <- which(!is.na(targets[,dep.var]) & targets$spec==spec & targets[,dep.var]>0)
-abbas <- targets[grew,]
 
 ################################################################################
 ##
@@ -51,7 +51,7 @@ abbas <- targets[grew,]
 ##
 ################################################################################
 ## Neighbor matrices
-nm <- mnm_agg(abbas, neighbors, sr)
+nm <- mnm_agg(targs, neighbors, sr)
 
 Rprof("~/work/neighborhoods/surround/test/Rprof.out")
 nsis <- nsi_agg(nm, nPars)
