@@ -36,14 +36,7 @@ dat <- read.csv("~/work/data/moose/moose-long.csv")
 
 ## define targets and neighbors
 targs <- subset(dat, spec == "ABBA" & !is.na(dat[,dep.var]) & dat[,dep.var] > 0)
-
-targets <- subset(dat, bqudx < (12-sr) & bqudx > (-1 + sr) & bqudy < (12 - sr) &
-                  bqudy > (-1 + sr) & stat=="ALIVE")
-neighbors <- subset(dat, bqudx < 11 & bqudx > 0 & bqudy < 11 &
-                    bqudy > 0 & stat=="ALIVE")
-## remove trees that dont satisfy certain conditions
-grew <- which(!is.na(targets[,dep.var]) & targets$spec==spec & targets[,dep.var]>0)
-abbas <- targets[grew,]
+nebs <- subset(dat, bqudx < 11 & bqudx > 0 & bqudy < 11 & bqudy > 0)
 
 ################################################################################
 ##
@@ -51,7 +44,7 @@ abbas <- targets[grew,]
 ##
 ################################################################################
 ## Neighbor matrices
-nm <- mnm_agg(abbas, neighbors, sr)
+nm <- mnm_agg(targs, nebs, sr=1)
 
 Rprof("~/work/neighborhoods/surround/test/Rprof.out")
 nsis <- nsi_agg(nm, nPars)
