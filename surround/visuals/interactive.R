@@ -5,8 +5,8 @@
 ################################################################################
 source("~/work/functions/functions-neighborhood.R")
 source("~/work/neighborhoods/surround/functions.R")
-source("~/work/neighborhoods/surround/test/functions-graphics.R")
-source("~/work/neighborhoods/surround/test/functions-interactive.R")
+source("~/work/neighborhoods/surround/visuals/functions-graphics.R")
+source("~/work/neighborhoods/surround/visuals/functions-interactive.R")
 source("~/work/ecodatascripts/vars/z-values/functions.R")
 
 ## Choose plot number and year to look at
