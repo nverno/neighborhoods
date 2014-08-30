@@ -16,3 +16,15 @@ pInfo <- ddply(dat, .(pplot), function(x) {
 })
 
 
+## Single target data
+mats <- which(unlist(lapply(nMat, function(x) !is.null(dim(x)))))
+single <- lapply(nMat[mats], function(x) {
+    x[3,]
+})
+
+## Visualize
+xyvals <- expand.grid(x=-2:2,y=-2:2)
+plot(xyvals$x, xyvals$y, type = "n")
+abline(h = -1.5:1.5, v = -1.5:1.5, lty = 2)
+points(0,0, col = "blue", pch = 15)
+points(single[["x"]], single[["y"]], col = "red", pch = 16)
