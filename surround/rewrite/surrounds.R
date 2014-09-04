@@ -16,6 +16,11 @@ pInfo <- ddply(dat, .(pplot), function(x) {
 })
 
 
+################################################################################
+##
+##                                  Sandbox
+##
+################################################################################
 ## Single target data
 mats <- which(unlist(lapply(nMat, function(x) !is.null(dim(x)))))
 single <- lapply(nMat[mats], function(x) {
