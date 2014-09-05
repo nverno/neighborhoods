@@ -8,6 +8,8 @@ source("~/work/functions/neighborhoods/rewrite/final/run-mnm.R")
 ## Old surround functions
 source("~/work/neighborhoods/surround/functions.R")
 
+## Coordinate conversions
+source("~/work/functions/functions-coordinates.R")
 
 ## Neighbor coordinates relative to target coordinates
 ## (i.e neighbor_X - target_X)
@@ -97,7 +99,7 @@ connected_comps <- function(C, nsize=9) {
 
 
 ## Example neighborhood
-ex_neighborhood <- function(deg=NULL, nbrs=NULL, numNebs=NULL, rand=TRUE, ...){
+ex_neighborhood <- function(numQuads=NULL, nbrs=NULL, numNebs=NULL, rand=TRUE, ...){
     xyvals <- expand.grid(x=-1.5:1.5, y=-1.5:1.5)
     plot(xyvals, type="n", main="Example Neighborhood")
     abline(h=-1.5:1.5, v=-1.5:1.5, lty=2)
@@ -105,7 +107,7 @@ ex_neighborhood <- function(deg=NULL, nbrs=NULL, numNebs=NULL, rand=TRUE, ...){
     points(0,0, col = "blue", pch=15)
 
     ## Add neighbors if there are any
-    if (rand) {
+    if (is.null(nbrs) && rand) {
         if (is.null(numNebs))
             numNebs <- sample(1:12,1)
         nbrs <- data.frame(x = sample(-1:1, numNebs, replace = T),
@@ -119,7 +121,38 @@ ex_neighborhood <- function(deg=NULL, nbrs=NULL, numNebs=NULL, rand=TRUE, ...){
     if (!is.null(nbrs))
         points(nbrs, col="red", pch = 16)
 
-    ## Shade in surrounded region
+    ## Convert to polar coords
+    pcoords <- t(apply(nbrs, 1, function(x) cart2pol(x = x[["x"]], y = x[["y"]])))
+    pcoords <- pcoords[order(pcoords[,2]),] # order by polar degree
+
+    ## Define quadrants and enumerate
+    if (is.null(numQuads)) numQuads <- 8
+    occ <- cut(pcoords[,2], breaks = seq(0, 2*pi, length.out = numQuads+1)) # enumerate
+
+    ## Draw quadrant lines
+    rad <- 2*pi / numQuads
+    for (i in 1:(numQuads/2)) {
+        pp <- rotate_point(1, 0, theta_r = rad * i)
+        abline(0, pp[2]/pp[1], lwd = 3, col = "blue", lty = 2)
+    }
+
+    ## Fill in occupied quadrats
+    occ <- as.integer(occ)
+
+    ## **** WORKING ON THE POLYGONS... ****
+    for (i in 1:numQuads) {
+        if (i %in% occ) {
+            pp1 <- rotate_point(1, 0, theta_r = rad * (i - 1))
+            slp1 <- pp1[2]/pp1[1]
+            pp2 <- rotate_point(1, 0, theta_r = rad * i)
+            slp2 <- pp2[2]/pp2[1]
+            xs <- seq(0, 1.5, length.out = 100)
+            xs <- c(0, xs, rev(xs))
+            ys <-
+            polygon(x = c(0, pp1[1]), y = c(0, pp1[2], pp2[2]))
+        }
+    }
+
 
 }
 
