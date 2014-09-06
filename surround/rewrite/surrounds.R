@@ -99,11 +99,12 @@ connected_comps <- function(C, nsize=9) {
 
 
 ## Example neighborhood
-ex_neighborhood <- function(numQuads=NULL, nbrs=NULL, numNebs=NULL, rand=TRUE, ...){
-    xyvals <- expand.grid(x=-1.5:1.5, y=-1.5:1.5)
+ex_neighborhood <- function(radius=1.5, numQuads=NULL, nbrs=NULL,
+                            numNebs=NULL, rand=TRUE, ...){
+    xyvals <- expand.grid(x=-radius:radius, y=-radius:radius)
     plot(xyvals, type="n", main="Example Neighborhood")
-    abline(h=-1.5:1.5, v=-1.5:1.5, lty=2)
-    abline(h=c(-1.5,1.5),v=c(-1.5,1.5),lwd=2)
+    abline(h=-radius:radius, v=-radius:radius, lty=2)
+    abline(h=c(-radius,radius),v=c(-radius,radius),lwd=2)
     points(0,0, col = "blue", pch=15)
 
     ## Add neighbors if there are any
@@ -142,14 +143,15 @@ ex_neighborhood <- function(numQuads=NULL, nbrs=NULL, numNebs=NULL, rand=TRUE, .
     ## **** WORKING ON THE POLYGONS... ****
     for (i in 1:numQuads) {
         if (i %in% occ) {
-            pp1 <- rotate_point(1, 0, theta_r = rad * (i - 1))
+            pp1 <- rotate_point(radius, 0, theta_r = rad * (i - 1))
             slp1 <- pp1[2]/pp1[1]
-            pp2 <- rotate_point(1, 0, theta_r = rad * i)
+            pp2 <- rotate_point(radius, 0, theta_r = rad * i)
             slp2 <- pp2[2]/pp2[1]
-            xs <- seq(0, 1.5, length.out = 100)
-            xs <- c(0, xs, rev(xs))
-            ys <-
-            polygon(x = c(0, pp1[1]), y = c(0, pp1[2], pp2[2]))
+            filler <- seq(pp1[1], pp2[1], length.out = 100)
+            xs <- c(0, filler, 0)
+            ys <- c(0, sqrt(radius^2 - filler^2), 0)
+            polygon(x = xs, y = ys, col = "steelblue", density = 10,
+                    lty = 2, lwd = 2, angle = atan((slp1+slp2)/2) * 180/pi + 90)
         }
     }
 
