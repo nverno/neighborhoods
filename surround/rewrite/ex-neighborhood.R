@@ -10,20 +10,22 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
     abline(h=c(-radius,radius),v=c(-radius,radius),lwd=2)
     points(0,0, col = "blue", pch=15)
 
+    make_nbrs <- function(numNebs) {
+        nbrs <- data.frame(x = sample(-1:1, numNebs, replace = T),
+                           y = sample(-1:1, numNebs, replace = T))
+        nbrs <- nbrs[-which(nbrs[["x"]] == 0 & nbrs[["y"]] == 0), ]
+        if (nrow(nbrs) < 1) nbrs <- make_nbrs(numNebs)
+        return ( nbrs )
+    }
+
     ## Add neighbors if there are any
     if (is.null(nbrs) && rand) {
-        nbrs <- data.frame()
         if (is.null(numNebs))
             numNebs <- sample(1:12,1)
-        while (nrow(nbrs) < 1) {
-            nbrs <- data.frame(x = sample(-1:1, numNebs, replace = T),
-                               y = sample(-1:1, numNebs, replace = T))
-            nbrs <- nbrs[-which(nbrs[["x"]] == 0 & nbrs[["y"]] == 0), ]
-        }
+        nbrs <- make_nbrs(numNebs)
         print(sprintf("Random neighborhood with %s quadrats occupied:",
                       nrow(unique(nbrs))))
         print(unique(nbrs))
-
     }
     if (!is.null(nbrs))
         points(nbrs, col="red", pch = 17, cex = 2)
@@ -53,20 +55,12 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
         if (i %in% pcoords$quad) { # quadrant is occupied, fill it
             angle1 <- (i - 1) * rad
             angles <- seq(angle1, angle1+rad, length.out = 100)
-            pol2cart(r=1.5, theta=angles)
-
-
-            pp1 <- rotate_point(radius, 0, theta_r = rad * (i - 1))
-            slp1 <- pp1[2]/pp1[1]
-            pp2 <- rotate_point(radius, 0, theta_r = rad * i)
-            slp2 <- pp2[2]/pp2[1]
-            filler <- seq(pp1[1], pp2[1], length.out = 100)
-            xs <- c(0, filler, 0)
-            ys <- c(0, sqrt(radius^2 - filler^2), 0)
-            polygon(x = xs, y = ys, col = "steelblue", density = 10,
-                    lty = 2, lwd = 2, angle = atan((slp1+slp2)/2) * 180/pi + 90)
+            ps <- data.frame(pol2cart(r=1.5, theta=angles))
+            polygon(x = c(0, ps[["x"]], 0),
+                    y = c(0, ps[["y"]], 0),
+                    col = "steelblue", density = 10,
+                    lty = 2, lwd = 2, angle = atan((2*angle1+rad)/2) * 180/pi + 90)
         }
+
     }
-
-
 }
