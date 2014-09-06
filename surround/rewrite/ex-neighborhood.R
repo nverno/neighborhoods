@@ -1,5 +1,7 @@
+source("~/work/functions/functions-coordinates.R")
+
 ## Example neighborhood
-ex_neighborhood <- function(radius=1.5, numQuads=NULL, nbrs=NULL,
+ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
                             numNebs=NULL, rand=TRUE, ...){
     xyvals <- expand.grid(x=-radius:radius,
                           y=-radius:radius)
@@ -10,41 +12,50 @@ ex_neighborhood <- function(radius=1.5, numQuads=NULL, nbrs=NULL,
 
     ## Add neighbors if there are any
     if (is.null(nbrs) && rand) {
+        nbrs <- data.frame()
         if (is.null(numNebs))
             numNebs <- sample(1:12,1)
-        nbrs <- data.frame(x = sample(-1:1, numNebs, replace = T),
-                           y = sample(-1:1, numNebs, replace = T))
-        nbrs <- nbrs[-which(nbrs[["x"]] == 0 & nbrs[["y"]] == 0), ]
+        while (nrow(nbrs) < 1) {
+            nbrs <- data.frame(x = sample(-1:1, numNebs, replace = T),
+                               y = sample(-1:1, numNebs, replace = T))
+            nbrs <- nbrs[-which(nbrs[["x"]] == 0 & nbrs[["y"]] == 0), ]
+        }
         print(sprintf("Random neighborhood with %s quadrats occupied:",
                       nrow(unique(nbrs))))
         print(unique(nbrs))
 
     }
     if (!is.null(nbrs))
-        points(nbrs, col="red", pch = 16)
+        points(nbrs, col="red", pch = 17, cex = 2)
 
     ## Convert to polar coords
-    pcoords <- t(apply(nbrs, 1, function(x)
-                       cart2pol(x = x[["x"]], y = x[["y"]])))
-    pcoords <- pcoords[order(pcoords[,2]),] # order by polar degree
+    pcoords <- data.frame(cart2pol(nbrs$x, nbrs$y))
+    pcoords <- pcoords[order(pcoords[,"theta"]),] # order by polar degree
 
-    ## Define quadrants and enumerate
-    if (is.null(numQuads)) numQuads <- 8
-    occ <- cut(pcoords[,2], breaks = seq(0, 2*pi, length.out = numQuads+1)) # enumerate
+    ## Enumerate neighbors by quadrat numbering (starting from positive x-axis)
+    pcoords$quad <- as.integer(cut(pcoords[,"theta"],
+                                   breaks = seq(0, 2*pi, length.out = numQuads+1),
+                                   right = FALSE))
 
     ## Draw quadrant lines
     rad <- 2*pi / numQuads
-    for (i in 1:(numQuads/2)) {
-        pp <- rotate_point(1, 0, theta_r = rad * i)
-        abline(0, pp[2]/pp[1], lwd = 3, col = "blue", lty = 2)
-    }
+    ps <- data.frame(pol2cart(r = radius * 2,
+                              theta = seq(0, 2*pi, by = rad)))
+    for (i in 1:nrow(ps))
+        lines(x = c(0, ps[i, "x"]),
+              y = c(0, ps[i, "y"]),
+              col = "blue", lty = 2)
 
     ## Fill in occupied quadrats
-    occ <- as.integer(occ)
 
     ## **** WORKING ON THE POLYGONS... ****
     for (i in 1:numQuads) {
-        if (i %in% occ) {
+        if (i %in% pcoords$quad) { # quadrant is occupied, fill it
+            angle1 <- (i - 1) * rad
+            angles <- seq(angle1, angle1+rad, length.out = 100)
+            pol2cart(r=1.5, theta=angles)
+
+
             pp1 <- rotate_point(radius, 0, theta_r = rad * (i - 1))
             slp1 <- pp1[2]/pp1[1]
             pp2 <- rotate_point(radius, 0, theta_r = rad * i)
