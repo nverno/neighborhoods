@@ -10,7 +10,7 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
     abline(h=c(-radius,radius),v=c(-radius,radius),lwd=2)
     points(0,0, col = "blue", pch=15)
 
-    make_nbrs <- function(numNebs) {
+    make_nbrs <- function(numNebs=numNebs, radius=radius) {
         set.seed(as.numeric(Sys.time()))
         nbrs <- data.frame(x = sample(-floor(radius):floor(radius), numNebs, replace = T),
                            y = sample(-floor(radius):floor(radius), numNebs, replace = T))
@@ -24,7 +24,6 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
             numNebs <- sample(1:12,1)
         nbrs <- make_nbrs(numNebs)
         if (nrow(nbrs) < 1) {
-            set.seed(as.numeric(Sys.time()))
             nbrs <- make_nbrs(numNebs)
         }
         print(sprintf("Random neighborhood with %s quadrats occupied:",
@@ -53,7 +52,6 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
               col = "blue", lty = 2)
 
     ## Fill in occupied quadrats
-
     ## **** WORKING ON THE POLYGONS... ****
     for (i in 1:numQuads) {
         if (i %in% pcoords$quad) { # quadrant is occupied, fill it
