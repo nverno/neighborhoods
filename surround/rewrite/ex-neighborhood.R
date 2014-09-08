@@ -11,10 +11,10 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
     points(0,0, col = "blue", pch=15)
 
     make_nbrs <- function(numNebs) {
-        nbrs <- data.frame(x = sample(-1:1, numNebs, replace = T),
-                           y = sample(-1:1, numNebs, replace = T))
-        nbrs <- nbrs[-which(nbrs[["x"]] == 0 & nbrs[["y"]] == 0), ]
-        if (nrow(nbrs) < 1) nbrs <- make_nbrs(numNebs)
+        set.seed(as.numeric(Sys.time()))
+        nbrs <- data.frame(x = sample(-floor(radius):floor(radius), numNebs, replace = T),
+                           y = sample(-floor(radius):floor(radius), numNebs, replace = T))
+        nbrs <- nbrs[which(!(nbrs[["x"]] == 0 & nbrs[["y"]] == 0)), ]
         return ( nbrs )
     }
 
@@ -23,6 +23,10 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
         if (is.null(numNebs))
             numNebs <- sample(1:12,1)
         nbrs <- make_nbrs(numNebs)
+        if (nrow(nbrs) < 1) {
+            set.seed(as.numeric(Sys.time()))
+            nbrs <- make_nbrs(numNebs)
+        }
         print(sprintf("Random neighborhood with %s quadrats occupied:",
                       nrow(unique(nbrs))))
         print(unique(nbrs))
@@ -55,7 +59,7 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
         if (i %in% pcoords$quad) { # quadrant is occupied, fill it
             angle1 <- (i - 1) * rad
             angles <- seq(angle1, angle1+rad, length.out = 100)
-            ps <- data.frame(pol2cart(r=1.5, theta=angles))
+            ps <- data.frame(pol2cart(r=radius, theta=angles))
             polygon(x = c(0, ps[["x"]], 0),
                     y = c(0, ps[["y"]], 0),
                     col = "steelblue", density = 10,
