@@ -1,7 +1,7 @@
 source("~/work/functions/functions-coordinates.R")
 
 ## Example neighborhood
-ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
+ex_neighborhood_2 <- function(radius=1.5, numQuads=8, nbrs=NULL,
                             numNebs=NULL, rand=TRUE, ...){
     xyvals <- expand.grid(x=-radius:radius,
                           y=-radius:radius)
@@ -97,7 +97,7 @@ ex_neighborhood <- function(radius=1.5, numQuads=8, nbrs=NULL,
     xy <- data.frame(pol2cart(pcoords$r, pcoords$theta))
     xy$rad <- round(pcoords$rad, 4)
     xy <- unique(xy)
-    text(xy, labels = xy$rad, cex = 2)
+    text(xy, labels = xy$rad)
 
     return ( list(nbrs=nbrs, pcoords=pcoords) )
 }
