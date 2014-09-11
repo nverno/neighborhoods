@@ -2,9 +2,14 @@ source("~/work/functions/functions-coordinates.R")
 
 ## Example surround where trees create there own shadow relative to their
 ##  size and distance from target tree
-nbr_angle <- function(targSize, nbrData) {
 
+## Function to compute relative effect of neighbor on target
+nbr_angle <- function(targSize, nbrData, ...) {
+    dist <- euc(0, 0, nbrData[["x"]], nbrData[["y"]])
+    rad <- ((nbrData[["size"]] / targSize) / dist^2) / 2
+    theta <- asin(rad / dist)
 }
+
 ex_neighborhood_3 <- function(targSize=NULL, radius=1.5, numQuads=8, nbrs=NULL,
                               numNebs=NULL, rand=TRUE, maxSize=2,
                               minSize=0.001, numSpecs=4, addLegend=FALSE,
@@ -48,6 +53,9 @@ ex_neighborhood_3 <- function(targSize=NULL, radius=1.5, numQuads=8, nbrs=NULL,
             legend("topright", legend = c(sort(unique(nbrs$spec))), pch = 17,
                    col = sort(unique(nbrs$spec)))
     }
+
+    ## Compute neighbor angle
+    nbrs$angle <- do.call(angleFunc, list(targSize=targSize, nbrData=nbrs))
 
     ## Convert to polar coords
     pcoords <- data.frame(cart2pol(nbrs$x, nbrs$y))
