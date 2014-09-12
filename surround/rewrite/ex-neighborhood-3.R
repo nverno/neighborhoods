@@ -66,6 +66,8 @@ ex_neighborhood_3 <- function(targSize=NULL, radius=1.5, numQuads=8, nbrs=NULL,
                                    breaks = seq(0, 2*pi, length.out = numQuads+1),
                                    right = FALSE))
 
+    ## TODO add in 3d stuff here
+
     ## Find consecutive filled quadrats
     rad <- 2*pi / numQuads
     filled <- unique(pcoords$quad)
