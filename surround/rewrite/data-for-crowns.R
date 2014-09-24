@@ -33,3 +33,4 @@ table(pp[p86 | p87, "ASPCL"]) # Only east side
 
 ## Species
 table(dat$SPEC)
+
