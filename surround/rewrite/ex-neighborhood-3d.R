@@ -1,7 +1,11 @@
 source("~/work/functions/functions-coordinates.R")
+source("~/work/functions/functions-geometry.R")
 
 ## Example surround where trees create there own shadow relative to their
 ##  size and distance from target tree
+
+## Temporary function to compute neighbor radius
+nbr_radius <- function()
 
 ## Function to compute relative effect of neighbor on target
 nbr_angle <- function(targSize, nbrData, ...) {
