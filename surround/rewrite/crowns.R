@@ -24,7 +24,8 @@ dat <- pp[((!is.na(pp$cperp86) & !is.na(pp$clong86))
           & !(!is.na(pp$cperp86) & !is.na(pp$cperp87)), ]  # remove repeated measurements
 nrow(dat[!is.na(dat$cperp86) & !is.na(dat$cperp87), ])     # 0
 nrow(dat[!is.na(dat$clong86) & !is.na(dat$clong87), ])     # 0
-nrow(dat[is.na(dat$ht86) & is.na(dat$ht87)])
+
+## Join 86/87 data
 
 
 ## Crown area: pi * a * b,
