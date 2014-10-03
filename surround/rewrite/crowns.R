@@ -76,7 +76,7 @@ hardwoods <- c("BEAL", "BECO", "ACSA", "SOAM")
 crwnAreaMods <- dlply(dat, .(elevcl), function(x) {
     piruMod <- nls(crwn_area, data = x[x$spec == "PIRU", ], start = list(a = 100, b = .1, c = 0.01))
     abbaMod <- nls(crwn_area, data = x[x$spec == "ABBA", ], start = list(a = 100, b = .1, c = 0.01))
-    becoMod <- nls(crwn_area, data = x[x$spec == "BECO" | x$spec == "BEAL", ],
+    becoMod <- nls(crwn_area, data = x[x$spec == "BECO" | x$spec == "BEAL" | x$spec == "BEPA", ],
                    start = list(a = 100, b = .1, c = 0.01))
     hardMod <- nls(crwn_area, data = x[x$spec %in% hardwoods, ], start = list(a = 100, b = .1, c = 0.01))
     list("piru" = piruMod, "abba" = abbaMod, "beco" = becoMod, "hard" = hardMod)
@@ -115,7 +115,7 @@ for (ee in elev) {
 crwnDepthMods <- dlply(dat, .(elevcl), function(x) {
     piruMod <- lm(crwn_depth, data = x[x$spec == "PIRU", ])
     abbaMod <- lm(crwn_depth, data = x[x$spec == "ABBA", ])
-    becoMod <- lm(crwn_depth, data = x[x$spec == "BECO" | x$spec == "BEAL", ])
+    becoMod <- lm(crwn_depth, data = x[x$spec == "BECO" | x$spec == "BEAL" | x$spec == "BEPA", ])
     hardMod <- lm(crwn_depth, data = x[x$spec %in% hardwoods, ])
     list("piru" = piruMod, "abba" = abbaMod, "beco" = becoMod, "hard" = hardMod)
 })
