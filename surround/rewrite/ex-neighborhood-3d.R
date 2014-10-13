@@ -1,5 +1,6 @@
 source("~/work/functions/functions-coordinates.R")
 source("~/work/functions/functions-geometry.R")
+dat <- read.csv("~/work/data/moose/moose-long.csv")
 
 ## Example surround where trees create there own shadow relative to their
 ##  size and distance from target tree
