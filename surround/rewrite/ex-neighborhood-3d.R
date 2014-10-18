@@ -1,3 +1,8 @@
+################################################################################
+##
+##                            3-d Surround Model
+##
+################################################################################
 source("~/work/functions/functions-coordinates.R")
 source("~/work/functions/functions-geometry.R")
 dat <- read.csv("~/work/data/moose/moose-long.csv")
