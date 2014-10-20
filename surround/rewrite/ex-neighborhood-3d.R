@@ -6,12 +6,9 @@
 source("~/work/functions/functions-coordinates.R")
 source("~/work/functions/functions-geometry.R")
 dat <- read.csv("~/work/data/moose/moose-long.csv")
+samp <- dat[dat$elevcl == "L" & dat$stat == "ALIVE", c("spec", "ba", "ht", "crarea", "crdepth")]
+samp <- samp[complete.cases(samp), ]  # Use this subset to sample neighbor variables
 
-## Example surround where trees create there own shadow relative to their
-##  size and distance from target tree
-
-## Temporary function to compute neighbor radius
-nbr_radius <- function()
 
 ## Function to compute relative effect of neighbor on target
 nbr_angle <- function(targSize, nbrData, ...) {
