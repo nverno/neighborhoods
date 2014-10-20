@@ -8,7 +8,7 @@ source("~/work/functions/functions-geometry.R")
 dat <- read.csv("~/work/data/moose/moose-long.csv")
 samp <- dat[dat$elevcl == "L" & dat$stat == "ALIVE", c("spec", "ba", "ht", "crarea", "crdepth")]
 samp <- samp[complete.cases(samp), ]  # Use this subset to sample neighbor variables
-
+samp$shape <- ifelse(samp$spec %in% c("ABBA", "PIRU"), "cone", "sphere")
 
 ## Function to compute relative effect of neighbor on target
 nbr_angle <- function(targSize, nbrData, ...) {
@@ -17,7 +17,31 @@ nbr_angle <- function(targSize, nbrData, ...) {
     theta <- asin(rad / dist)
 }
 
-ex_neighborhood_3d <- function(targSize=NULL, radius=1.5, numQuads=8, nbrs=NULL,
+## Case 1: Sphere
+nbr <- nbrs[1, ]
+sr_cone <- function(theta, deg=FALSE) {
+    if (deg) theta <- theta * pi/180
+    2*pi*(1 - cos(theta/2))
+}
+## First, find angle between tangents to curve
+## For now, crown radius is the minimum of crown depth and horizontal radius
+r <- min(sqrt(nbr[, "crarea"]/pi), nbr[, "crdepth"]/2)
+d <- euc(0, 0, nbr[, "x"], nbr[, "y"])
+theta1 <- asin(r/d)
+theta <- theta1*2
+solidAngle <- sr_cone(theta)
+
+## Draw neighbor circles and tangent line
+symbols(nbr$x, nbr$y, circles = r, add=TRUE, inches=FALSE)
+tangs <- pol2cart(sqrt(d^2-r^2), cart2pol(0,1)[2] + c(-1,1)*theta1)
+lines(x=c(0, tangs[1,1]), y=c(0, tangs[1,2]))
+lines(x=c(0, tangs[2,1]), y=c(0, tangs[2,2]))
+
+## Case 2: Cone
+
+
+
+ex_neighborhood_3d <- function(samp=samp, targSize=NULL, radius=1.5, numQuads=8, nbrs=NULL,
                               numNebs=NULL, rand=TRUE, maxSize=2,
                               minSize=0.001, numSpecs=4, addLegend=FALSE,
                               angleFunc=nbr_angle,...){
@@ -28,34 +52,33 @@ ex_neighborhood_3d <- function(targSize=NULL, radius=1.5, numQuads=8, nbrs=NULL,
     abline(h=c(-radius,radius),v=c(-radius,radius),lwd=2)
     points(0,0, col = "blue", pch=15)
 
-    make_nbrs <- function(numNebs=numNebs, radius=radius) {
-        set.seed(as.numeric(Sys.time()))
+    make_nbrs <- function(samp=samp, numNebs=numNebs, radius=radius) {
+        rows <- sample(1:nrow(samp), numNebs, replace = TRUE)
         nbrs <- data.frame(x = sample(-floor(radius):floor(radius), numNebs, replace = T),
-                           y = sample(-floor(radius):floor(radius), numNebs, replace = T),
-                           size = sample(seq(minSize,maxSize, length.out = numNebs*2), replace = T),
-                           spec = sample(1:numSpecs, replace = T))
+                           y = sample(-floor(radius):floor(radius), numNebs, replace = T))
+        nbrs <- cbind(nbrs, samp[rows, ])
         nbrs <- nbrs[which(!(nbrs[["x"]] == 0 & nbrs[["y"]] == 0)), ]
         return ( nbrs )
     }
 
     ## Target info
-    if (is.null(targSize))
-        targSize <- sample(seq(minSize, maxSize, length.out = numNebs*2), 1)
+    if (is.null(targ))
+        targ <- samp[sample(nrow(samp), 1), ]
 
     ## Add neighbors if there are any
     if (is.null(nbrs) && rand) {
         if (is.null(numNebs))
-            numNebs <- sample(1:12,1)
-        nbrs <- make_nbrs(numNebs,radius)
+            numNebs <- sample(1:12, 1)
+        nbrs <- make_nbrs(samp, numNebs, radius)
         if (nrow(nbrs) < 1) {
-            nbrs <- make_nbrs(numNebs=numNebs, radius=radius)
+            nbrs <- make_nbrs(samp=samp, numNebs=numNebs, radius=radius)
         }
         print(sprintf("Random neighborhood with %s quadrats occupied:",
                       nrow(unique(nbrs))))
         print(unique(nbrs))
     }
     if (!is.null(nbrs)) {
-        points(nbrs, col=as.integer(nbrs$spec), pch = 17, cex = 2)
+        points(nbrs$x, nbrs$y, col=as.integer(nbrs$spec), pch = 17, cex = 2)
         if (addLegend)
             legend("topright", legend = c(sort(unique(nbrs$spec))), pch = 17,
                    col = sort(unique(nbrs$spec)))
