@@ -5,10 +5,17 @@
 ################################################################################
 source("~/work/functions/functions-coordinates.R")
 source("~/work/functions/functions-geometry.R")
+source("~/work/ecodatascripts/vars/z-values/functions.R")
+
+## Load data and pull out working subset (LOW elevation complete cases)
 dat <- read.csv("~/work/data/moose/moose-long.csv")
 samp <- dat[dat$elevcl == "L" & dat$stat == "ALIVE", c("spec", "ba", "ht", "crarea", "crdepth")]
 samp <- samp[complete.cases(samp), ]  # Use this subset to sample neighbor variables
 samp$shape <- ifelse(samp$spec %in% c("ABBA", "PIRU"), "cone", "sphere")
+
+## Extract some bounds for simulating variables
+## Slope
+
 
 ## Function to compute relative effect of neighbor on target
 nbr_angle <- function(targSize, nbrData, ...) {
@@ -26,7 +33,7 @@ sr_cone <- function(theta, deg=FALSE) {
 ## First, find angle between tangents to curve
 ## For now, crown radius is the minimum of crown depth and horizontal radius
 r <- min(sqrt(nbr[, "crarea"]/pi), nbr[, "crdepth"]/2)
-d <- euc(0, 0, nbr[, "x"], nbr[, "y"])
+d <- euc(c(0,0,0), nbr[, "x"], nbr[, "y"])
 theta1 <- asin(r/d)
 theta <- theta1*2
 solidAngle <- sr_cone(theta)
@@ -36,8 +43,9 @@ symbols(nbr$x, nbr$y, circles = r, add=TRUE, inches=FALSE)
 tangs <- pol2cart(sqrt(d^2-r^2), cart2pol(0,1)[2] + c(-1,1)*theta1)
 lines(x=c(0, tangs[1,1]), y=c(0, tangs[1,2]))
 lines(x=c(0, tangs[2,1]), y=c(0, tangs[2,2]))
-
+abline()
 ## Case 2: Cone
+
 
 
 
@@ -53,9 +61,11 @@ ex_neighborhood_3d <- function(samp=samp, targSize=NULL, radius=1.5, numQuads=8,
     points(0,0, col = "blue", pch=15)
 
     make_nbrs <- function(samp=samp, numNebs=numNebs, radius=radius) {
+        slope <-
         rows <- sample(1:nrow(samp), numNebs, replace = TRUE)
         nbrs <- data.frame(x = sample(-floor(radius):floor(radius), numNebs, replace = T),
-                           y = sample(-floor(radius):floor(radius), numNebs, replace = T))
+                           y = sample(-floor(radius):floor(radius), numNebs, replace = T),
+                           z = sample(-floor(radius):floor(radius), numNebs, replace = T))
         nbrs <- cbind(nbrs, samp[rows, ])
         nbrs <- nbrs[which(!(nbrs[["x"]] == 0 & nbrs[["y"]] == 0)), ]
         return ( nbrs )
