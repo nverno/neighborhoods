@@ -14,8 +14,8 @@ samp <- samp[complete.cases(samp), ]  # Use this subset to sample neighbor varia
 samp$shape <- ifelse(samp$spec %in% c("ABBA", "PIRU"), "cone", "sphere")
 
 ## Extract some bounds for simulating variables
-## Slope
-
+slope_range <- range(dat[dat$elevcl == "L" & dat$stat == "ALIVE", "slope"])
+asp_range <- range(dat[dat$elevcl == "L" & dat$stat == "ALIVE", "asp"])
 
 ## Function to compute relative effect of neighbor on target
 nbr_angle <- function(targSize, nbrData, ...) {
@@ -30,6 +30,7 @@ sr_cone <- function(theta, deg=FALSE) {
     if (deg) theta <- theta * pi/180
     2*pi*(1 - cos(theta/2))
 }
+
 ## First, find angle between tangents to curve
 ## For now, crown radius is the minimum of crown depth and horizontal radius
 r <- min(sqrt(nbr[, "crarea"]/pi), nbr[, "crdepth"]/2)
@@ -46,11 +47,24 @@ lines(x=c(0, tangs[2,1]), y=c(0, tangs[2,2]))
 abline()
 ## Case 2: Cone
 
+radius = 2.5
+num_nebs = 20
 
+make_nbrs <- function(samp=samp, num_nebs=num_nebs, radius=radius) {
+    slope <- runif(1, min=slope_range[1], max=slope_range[2])
+    asp <- runif(1, min=asp_range[1], max=asp_range[2])
+    rows <- sample(1:nrow(samp), num_nebs, replace = TRUE)
+    nbrs <- data.frame(x = sample(-floor(radius):floor(radius), num_nebs, replace = T),
+                       y = sample(-floor(radius):floor(radius), num_nebs, replace = T),
+                       z = sample(-floor(radius):floor(radius), num_nebs, replace = T))
+    nbrs <- cbind(nbrs, samp[rows, ])
+    nbrs <- nbrs[which(!(nbrs[["x"]] == 0 & nbrs[["y"]] == 0)), ]
+    return ( nbrs )
+}
 
 
 ex_neighborhood_3d <- function(samp=samp, targSize=NULL, radius=1.5, numQuads=8, nbrs=NULL,
-                              numNebs=NULL, rand=TRUE, maxSize=2,
+                              num_nebs=NULL, rand=TRUE, maxSize=2,
                               minSize=0.001, numSpecs=4, addLegend=FALSE,
                               angleFunc=nbr_angle,...){
     xyvals <- expand.grid(x=-radius:radius,
@@ -60,16 +74,6 @@ ex_neighborhood_3d <- function(samp=samp, targSize=NULL, radius=1.5, numQuads=8,
     abline(h=c(-radius,radius),v=c(-radius,radius),lwd=2)
     points(0,0, col = "blue", pch=15)
 
-    make_nbrs <- function(samp=samp, numNebs=numNebs, radius=radius) {
-        slope <-
-        rows <- sample(1:nrow(samp), numNebs, replace = TRUE)
-        nbrs <- data.frame(x = sample(-floor(radius):floor(radius), numNebs, replace = T),
-                           y = sample(-floor(radius):floor(radius), numNebs, replace = T),
-                           z = sample(-floor(radius):floor(radius), numNebs, replace = T))
-        nbrs <- cbind(nbrs, samp[rows, ])
-        nbrs <- nbrs[which(!(nbrs[["x"]] == 0 & nbrs[["y"]] == 0)), ]
-        return ( nbrs )
-    }
 
     ## Target info
     if (is.null(targ))
@@ -77,11 +81,11 @@ ex_neighborhood_3d <- function(samp=samp, targSize=NULL, radius=1.5, numQuads=8,
 
     ## Add neighbors if there are any
     if (is.null(nbrs) && rand) {
-        if (is.null(numNebs))
-            numNebs <- sample(1:12, 1)
-        nbrs <- make_nbrs(samp, numNebs, radius)
+        if (is.null(num_nebs))
+            num_nebs <- sample(1:12, 1)
+        nbrs <- make_nbrs(samp, num_nebs, radius)
         if (nrow(nbrs) < 1) {
-            nbrs <- make_nbrs(samp=samp, numNebs=numNebs, radius=radius)
+            nbrs <- make_nbrs(samp=samp, num_nebs=num_nebs, radius=radius)
         }
         print(sprintf("Random neighborhood with %s quadrats occupied:",
                       nrow(unique(nbrs))))
