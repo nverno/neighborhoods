@@ -1,3 +1,11 @@
+### ex-neighborhood-3d.R --- 
+## Filename: ex-neighborhood-3d.R
+## Description: 3D Surround Model
+## Author: Noah Peart
+## Created: Fri Oct 31 10:59:36 2014 (-0400)
+## Last-Updated: Fri Oct 31 11:00:01 2014 (-0400)
+##           By: Noah Peart
+######################################################################
 ################################################################################
 ##
 ##                            3-d Surround Model
