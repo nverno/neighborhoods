@@ -3,7 +3,7 @@
 ## Description: 3D Surround Model
 ## Author: Noah Peart
 ## Created: Fri Oct 31 10:59:36 2014 (-0400)
-## Last-Updated: Fri Oct 31 11:00:01 2014 (-0400)
+## Last-Updated: Mon Nov  3 20:30:55 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 ################################################################################
@@ -15,6 +15,7 @@ source("~/work/functions/functions-coordinates.R")
 source("~/work/functions/functions-geometry.R")
 source("~/work/ecodatascripts/vars/z-values/functions.R")
 
+##
 ## Load data and pull out working subset (LOW elevation complete cases)
 dat <- read.csv("~/work/data/moose/moose-long.csv")
 samp <- dat[dat$elevcl == "L" & dat$stat == "ALIVE", c("spec", "ba", "ht", "crarea", "crdepth")]
