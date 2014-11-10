@@ -3,7 +3,7 @@
 ## Description: 3D Surround Model
 ## Author: Noah Peart
 ## Created: Fri Oct 31 10:59:36 2014 (-0400)
-## Last-Updated: Mon Nov 10 12:59:04 2014 (-0500)
+## Last-Updated: Mon Nov 10 18:15:12 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 ################################################################################
@@ -26,62 +26,26 @@ slope_range <- range(dat[dat$elevcl == "L" & dat$stat == "ALIVE", "slope"])
 asp_range <- range(dat[dat$elevcl == "L" & dat$stat == "ALIVE", "asp"])
 
 ## Generate some test neighbor data
-make_nbrs <- function(samp=samp, num_nebs=num_nebs, radius=radius) {
+make_nbrs <- function(targ, samp=samp, num_nebs=num_nebs, radius=radius) {
     nbrs <- data.frame(x = sample(-floor(radius):floor(radius), num_nebs, replace = T),
                        y = sample(-floor(radius):floor(radius), num_nebs, replace = T))
     nbrs$slope <- runif(1, min=slope_range[1], max=slope_range[2])
     nbrs$asp <- runif(1, min=asp_range[1], max=asp_range[2])
     nbrs$z <- zvals(nbrs[,c("x","y")], theta_S=nbrs$slope, theta_A=nbrs$asp)
-    nbrs$dist <- euc(rbind(nbrs$x, nbrs$y), c(0,0))
     rows <- sample(1:nrow(samp), num_nebs, replace = TRUE)
     nbrs <- cbind(nbrs, samp[rows, ])
+    nbrs$dist <- euc(rbind(nbrs$x, nbrs$y, nbrs$z+nbrs$ht), c(0,0,targ$ht))
     nbrs <- nbrs[which(!(nbrs[["x"]] == 0 & nbrs[["y"]] == 0)), ]
     return ( nbrs )
 }
 
 ## Test data.frame
 radius = 2.5
-num_nebs = 20
-nbrs <- make_nbrs(samp, num_nebs = 20, radius = 2.5)
+num_nebs = 5
 targ <- samp[sample(nrow(samp), 1), ]
+nbrs <- make_nbrs(targ, samp, num_nebs = num_nebs, radius = radius)
 
-## Spherical neighbors
-nbr <- nbrs[1, ]
-sr_cone <- function(theta, deg=FALSE) {
-    if (deg) theta <- theta * pi/180
-    2*pi*(1 - cos(theta/2))
-}
 
-## Z-value of center of mass of ellipse
-z_ellipse <- function(height, z, crdepth) {
-    return ( (height + z) - (crdepth/2) )
-}
-
-## Position vector of ellipsoid neighbor
-## pos_ellipse <- function(nbr_xyz, nbr_crdepth, nbr_height) {
-##     return ( c(x, y, z_ellipse) )
-## }
-
-## First, find angle between tangents to curve
-## For now, crown radius is the minimum of crown depth and horizontal radius
-r <- min(sqrt(nbr[, "crarea"]/pi), nbr$dist)  # if crown of nbr obscures target, set to dist
-d <- nbr$dist
-theta1 <- asin(r/d)
-theta <- theta1*2
-solid_angle <- sr_cone(theta)
-
-## Draw neighbor circles and tangent line
-xyvals <- expand.grid(x=-radius:radius,
-                      y=-radius:radius)
-plot(xyvals, type="n", main="Example Neighborhood")
-abline(h=-radius:radius, v=-radius:radius, lty=2)
-abline(h=c(-radius,radius),v=c(-radius,radius),lwd=2)
-points(0,0, col = "blue", pch=15)
-
-symbols(nbr$x, nbr$y, circles = r, add=TRUE, inches=FALSE)
-tangs <- pol2cart(sqrt(d^2-r^2), cart2pol(0,1)[2] + c(-1,1)*theta1)
-lines(x=c(0, tangs[1,1]), y=c(0, tangs[1,2]))
-lines(x=c(0, tangs[2,1]), y=c(0, tangs[2,2]))
 
 ## Case 2: Cone
 
