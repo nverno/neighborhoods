@@ -3,7 +3,7 @@
 ## Description: Deal with spherical neighbors
 ## Author: Noah Peart
 ## Created: Mon Nov 10 12:45:00 2014 (-0500)
-## Last-Updated: Mon Nov 10 18:11:45 2014 (-0500)
+## Last-Updated: Tue Nov 11 19:00:47 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-geometry.R")  # solid angle for cone
@@ -25,7 +25,7 @@ pos_vec_ellipse <- function(x, y, z, crdepth, height) {
 ## pos <- pos_vec_ellipse(nbr$x, nbr$y, nbr$z, nbr$crdepth, nbr$ht)
 
 ## Find opening angle, theta, of cone formed from target to spherical neighbor
-## and neighbors crown radius
+## and neighbors crown radius, r
 ## NOTE: crown radius of neighbor is the minimum of its actual crown radius
 ## and the distance to target (to avoid condition where target's crown is
 ## enveloped by neighbor's crown)
@@ -68,9 +68,11 @@ draw_nbr_sphere <- function(nbr, radius=2.5) {
 }
 
 ## Draw whole neighborhood
-draw_hood_full <- function(radius=2.5, nbrs) {
+draw_hood_full <- function(nbrs, radius=2.5) {
     draw_hood_empty()
     for (n in 1:nrow(nbrs)) {
         draw_nbr_sphere(nbrs[n,])
     }
+
 }
+
