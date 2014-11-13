@@ -3,7 +3,7 @@
 ## Description: Create test neighborhood data
 ## Author: Noah Peart
 ## Created: Tue Nov 11 16:31:59 2014 (-0500)
-## Last-Updated: Tue Nov 11 19:00:52 2014 (-0500)
+## Last-Updated: Wed Nov 12 18:37:12 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -39,6 +39,6 @@ make_nbrs <- function(targ, samp=samp, num_nebs=num_nebs, radius=radius) {
 radius = 2.5
 num_nebs = 5
 ## targ <- samp[sample(nrow(samp), 1), ]
-targ <- samp[8,]
+targ <- samp[sample(1:nrow(samp),1),]
 nbrs <- make_nbrs(targ, samp, num_nebs = num_nebs, radius = radius)
 
