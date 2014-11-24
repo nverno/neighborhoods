@@ -1,9 +1,9 @@
 ### spheres.R --- 
 ## Filename: spheres.R
-## Description: Deal with spherical neighbors
+## Description: Spherical neighbors
 ## Author: Noah Peart
 ## Created: Mon Nov 10 12:45:00 2014 (-0500)
-## Last-Updated: Fri Nov 14 13:12:35 2014 (-0500)
+## Last-Updated: Mon Nov 24 18:55:11 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-geometry.R")  # solid angle for cone
