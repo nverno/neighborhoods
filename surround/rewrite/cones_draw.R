@@ -3,12 +3,12 @@
 ## Description: Drawing a neighborhood full of cones
 ## Author: Noah Peart
 ## Created: Tue Nov 25 13:23:17 2014 (-0500)
-## Last-Updated: Tue Nov 25 14:17:46 2014 (-0500)
+## Last-Updated: Tue Nov 25 15:31:19 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 ## NOTE: this is a testing platform where every neighbor is treated as a
 ## a cone, prior to combining cones and spheres into the same neighborhood.
-
+source("~/work/neighborhoods/surround/rewrite/cones.R")
 
 ################################################################################
 ##
@@ -38,7 +38,7 @@ pixel_matrix <- function(targ, nbrs, size=10, precise=TRUE) {
         n <- nbrs[i,]
         b <- ellipse_long_axis(n)
         a <- ellipse_short_axis(targ, n)
-        h <- height_angle(nbr)
+        h <- height_angle(n)
         use_triangle <- ifelse(a >= h, FALSE, TRUE)  # search for triangle or not
         pos <- c(n[["x"]], n[["y"]], n[["ht"]] - n[["crdepth"]] + n[["z"]])
         names(pos) <- c("x", "y", "z")
@@ -52,7 +52,6 @@ pixel_matrix <- function(targ, nbrs, size=10, precise=TRUE) {
         ## is below the neighbor the BACK of the ellipse MUST be accounted for
         ## *** Create the search window ***
         if (targ[["ht"]] >= pos[["z"]]) {  # target looking down at nbr
-            if (n[["x"]] >
             vrad <- ifelse(use_triangle,
                            c(-1,1)*c(h,a) + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]),
                            c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]) )
