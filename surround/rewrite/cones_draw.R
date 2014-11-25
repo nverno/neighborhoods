@@ -1,21 +1,20 @@
-### pixel_matrix.R --- 
-## Filename: pixel_matrix.R
-## Description: Create pixel matrix for a neighborhood
+### cones_draw.R --- 
+## Filename: cones_draw.R
+## Description: Drawing a neighborhood full of cones
 ## Author: Noah Peart
-## Created: Tue Nov 11 16:30:42 2014 (-0500)
-## Last-Updated: Tue Nov 25 13:22:49 2014 (-0500)
+## Created: Tue Nov 25 13:23:17 2014 (-0500)
+## Last-Updated: Tue Nov 25 13:47:53 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
-source("~/work/neighborhoods/surround/rewrite/spheres.R")
-source("~/work/neighborhoods/surround/rewrite/create_test.R")
+## NOTE: this is a testing platform where every neighbor is treated as a
+## a cone, prior to combining cones and spheres into the same neighborhood.
 
-## Find nearest pixel in matrix from radian value
-## mdim: dimension of matrix (square)
-nearest_pixel <- function(rad, mdim=100) {
-    step_size <- 2*pi/mdim
-    return ( round(rad/step_size) )
-}
 
+################################################################################
+##
+##      Create pixel matrix and image, treating all neighbors as cones
+##
+################################################################################
 ## Determine vertical radian from positive x-axis (0 radians)
 ## NOTE: relative to origin (0, 0, 0)
 v_rad <- function(x, z) {
@@ -37,12 +36,28 @@ pixel_matrix <- function(targ, nbrs, size=10, precise=TRUE) {
         
     for (i in 1:nrow(nbrs)) {
         n <- nbrs[i,]
-        theta <- cone_theta(n)[["theta"]]  # cone angle
-        pos <- pos_vec_ellipse(n[["x"]], n[["y"]], n[["z"]], n[["crdepth"]], n[["ht"]])
+        b <- ellipse_long_axis(n)
+        a <- ellipse_short_axis(targ, n)
+        h <- height_angle(nbr)
+        use_triangle <- ifelse(a >= h, FALSE, TRUE)  # search for triangle or not
+        pos <- c(n[["x"]], n[["y"]], n[["ht"]] - n[["crdepth"]] + n[["z"]])
+        names(pos) <- c("x", "y", "z")
+
         ## horizontal/vertical radians
         pol <- cart2pol(n[["x"]], n[["y"]])
-        hrad <- c(-1,1)*theta/2 + pol[["theta"]]
-        vrad <- c(-1,1)*theta/2 + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
+        hrad <- c(-1,1)*b/2 + pol[["theta"]]
+
+        ## If target is above neighbor, the FRONT of the ellipse MUST be
+        ## accounted for (as well as possibly the back), and if the target
+        ## is below the neighbor the BACK of the ellipse MUST be accounted for
+        ## *** Create the search window ***
+        if (targ[["ht"]] >= pos[["z"]]) {  # target looking down at nbr
+            
+        }
+
+        
+        vrad_ellipse <- c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
+        vrad_both <- c(-1,1)*w_ht/2 + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
 
         ## Fill matrix (square version)
         rows <- which(mat_ind >= min(hrad) - inc & mat_ind <= max(hrad) + inc)
@@ -62,18 +77,6 @@ pixel_matrix <- function(targ, nbrs, size=10, precise=TRUE) {
     }
     return ( mat )
 }
-
-## ## distance matrix for pixels w/in square range
-## size = 100
-## inc <- 2*pi/size
-## h_range <- nearest_pixel(hrad)
-## v_range <- nearest_pixel(vrad)
-## seqr <- max(diff(h_range), diff(v_range))
-## h_seq <- seq(h_range[1]*2*pi/size, h_range[2]*2*pi/size, length.out = seqr)
-## v_seq <- seq(v_range[1]*2*pi/size, v_range[2]*2*pi/size, length.out = seqr)
-
-## dmat <- euc(t(as.matrix(expand.grid(h_seq, v_seq))), c(mean(hrad), mean(vrad)))
-## sum(dmat <= theta/2)/length(dmat)
 
 ## Image of matrix
 image_hood <- function(targ, nbrs, size=100, precise = TRUE) {
