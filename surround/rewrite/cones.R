@@ -3,7 +3,7 @@
 ## Description: Conical neighbors
 ## Author: Noah Peart
 ## Created: Mon Nov 24 18:54:32 2014 (-0500)
-## Last-Updated: Mon Nov 24 23:31:22 2014 (-0500)
+## Last-Updated: Tue Nov 25 10:53:24 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/neighborhoods/surround/rewrite/spheres.R")
