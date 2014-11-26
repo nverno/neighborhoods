@@ -3,7 +3,7 @@
 ## Description: Create test neighborhood data
 ## Author: Noah Peart
 ## Created: Tue Nov 11 16:31:59 2014 (-0500)
-## Last-Updated: Mon Nov 24 21:41:00 2014 (-0500)
+## Last-Updated: Wed Nov 26 17:39:30 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -14,7 +14,7 @@ source("~/work/ecodatascripts/vars/z-values/functions.R")
 dat <- read.csv("~/work/data/moose/moose-long.csv")
 samp <- dat[dat$elevcl == "L" & dat$stat == "ALIVE", c("spec", "ba", "ht", "crarea", "crdepth")]
 samp <- samp[complete.cases(samp), ]  # Use this subset to sample neighbor variables
-samp <- samp[samp$ht > 0,]
+samp <- samp[samp$ht > 0 & samp$ht > samp$crdepth,]
 samp$shape <- ifelse(samp$spec %in% c("ABBA", "PIRU"), "cone", "sphere")
 
 ## Extract some bounds for simulating variables

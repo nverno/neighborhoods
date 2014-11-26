@@ -3,7 +3,7 @@
 ## Description: Drawing a neighborhood full of cones
 ## Author: Noah Peart
 ## Created: Tue Nov 25 13:23:17 2014 (-0500)
-## Last-Updated: Wed Nov 26 15:33:20 2014 (-0500)
+## Last-Updated: Wed Nov 26 18:45:01 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 ## NOTE: this is a testing platform where every neighbor is treated as a
@@ -41,9 +41,10 @@ pixel_matrix_cones <- function(targ, nbrs, size=10, precise=TRUE) {
         a <- ellipse_short_axis(targ, n)
         h <- height_angle(n)
 
-        use_triangle <- ifelse(a >= h, FALSE, TRUE)  # search for triangle or not
+        use_tri <- ifelse(a >= h, FALSE, TRUE)  # search for triangle or not
         pos <- c(n[["x"]], n[["y"]], n[["ht"]] - n[["crdepth"]] + n[["z"]])
         names(pos) <- c("x", "y", "z")
+        upper <- ifelse(targ[["ht"]] > pos[["z"]], TRUE, FALSE)
 
         ## horizontal radians
         pol <- cart2pol(n[["x"]], n[["y"]])
@@ -54,14 +55,14 @@ pixel_matrix_cones <- function(targ, nbrs, size=10, precise=TRUE) {
         ## is below the neighbor the BACK of the ellipse MUST be accounted for
         ## Vertical radians
         if (targ[["ht"]] >= pos[["z"]]) {  # target looking down at nbr
-            if (use_triangle) {
-                vrad <- c(-1,1)*c(h,a) + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
+            if (use_tri) {
+                vrad <- c(-1,1)*h + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
             } else {
                 vrad <- c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
             }
         } else {                           # target looking up at nbr
-            if (use_triangle) {
-                vrad <- c(-1,1)*c(a,h) + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
+            if (use_tri) {
+                vrad <- c(-1,1)*h + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
             } else {
                 vrad <- c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]) 
             }
@@ -79,7 +80,8 @@ pixel_matrix_cones <- function(targ, nbrs, size=10, precise=TRUE) {
             ## 1. Check for pixels within ellipse part of cone
             ## 2. Check for pixels within triangle part of cone
             rc <- expand.grid(x=rows*2*pi/size, y=cols*2*pi/size)
-            pxs <- ellipse_pixels(rc, hrad, vrad, a, b, h)
+            pxs <- ellipse_pixels(xy=rc, hrad=hrad, vrad=vrad,
+                                  a=a, b=b, h=h, use_tri=use_tri, upper=upper)
             mat[rows, cols] <- mat[rows, cols] + matrix(pxs, nrow=length(rows),
                                                         ncol=length(cols))
             ## sum(dmat <= theta/2)/length(dmat)  # should approach pi/4 if circle exactly inscribed
@@ -89,19 +91,47 @@ pixel_matrix_cones <- function(targ, nbrs, size=10, precise=TRUE) {
 }
 
 ## Pixels within ellipse from search window
-ellipse_pixels <- function(xy, hrad, vrad, a, b, h, use_triangle, side) {
+ellipse_pixels <- function(xy, hrad, vrad, a, b, h, use_tri, upper) {
+    center <- c(mean(hrad), mean(vrad))  # center of base of cone
     ## Find ellipse pixels
-    res <- ifelse((xy$x - mean(hrad))**2/b**2 + (xy$y - mean(vrad))**2/a**2 <= 1,
-                  T, F)
-    if (use_triangle) {  # find triangle pixels
-        m <- 
-        res[xy$x <= mean(hrad) &
-                xy$y >= mean(xy$y) &
-                    xy$y <= mean(vrad) + xy$x * (h/b)] <- 1
-        res[xy$x > mean(hrad) &
-                xy$y >= mean(xy$y) &
-                    xy$y <= (h+mean(vrad)) - xy$x * (h/b)] <- 1
+    res <- ifelse((xy$x - center[1])**2/b**2 + (xy$y - center[2])**2/a**2 <= 1,
+                  1, 0)
+    if (use_tri) {  # find triangle pixels
+        if (upper) {  # target looking down on nbr, triangle on upper side
+            line1 <- line_bw_points(c(center[1] - b, center[2]),
+                                    c(center[1], center[2] + h))
+            line2 <- line_bw_points(c(center[1] + b, center[2]),
+                                    c(center[1], center[2] + h))
+        } else {
+            line1 <- line_bw_points(c(center[1] - b, center[2]),
+                                    c(center[1], center[2] - h))
+            line2 <- line_bw_points(c(center[1] + b, center[2]),
+                                    c(center[1], center[2] - h))
+        }
+        res[xy$x <= center[1] & xy$y >= center[2] &
+                xy$y <= line1[["slope"]] * xy$x + line1[["int"]]] <- 1
+        res[xy$x > center[1] & xy$y >= center[2] &
+                xy$y <= line2[["slope"]] * xy$x + line2[["int"]]] <- 1
     }
+    return ( res )
+}
+
+## center = c(mean(hrad), mean(vrad))
+## plot(rc, type="n")
+## plotellipse(rx = b, ry = a, mid = center, col = "green")
+## polygon(x=c(center[1] - b, center[1], center[1] + b, center[1] - b),
+##         y=c(center[2], center[2] + h, center[2], center[2]),
+##         col = "darkgreen")
+## points(rc)
+## abline(v=center[1], col = "blue")
+## abline(h=center[2], col = "red")
+
+## Line between two points
+line_bw_points <- function(p1, p2) {
+    m <- (p2[2] - p1[2])/(p2[1] - p1[1])
+    int <- p1[2] - m * p1[1]
+    res <- c(m, int)
+    names(res) <- c("slope", "int")
     return ( res )
 }
 
@@ -122,7 +152,5 @@ image_hood_cones <- function(targ, nbrs, size=100, precise = TRUE) {
 ## Make graphics
 source("~/work/neighborhoods/surround/rewrite/create_test.R")
 par(mfrow = c(1,2))
-image_hood_cones(targ, nbrs, 1000, precise=F)
 image_hood_cones(targ, nbrs, 1000, precise=T)
-
 draw_hood_full(nbrs)
