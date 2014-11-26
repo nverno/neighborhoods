@@ -3,12 +3,13 @@
 ## Description: Drawing a neighborhood full of cones
 ## Author: Noah Peart
 ## Created: Tue Nov 25 13:23:17 2014 (-0500)
-## Last-Updated: Tue Nov 25 15:31:19 2014 (-0500)
+## Last-Updated: Wed Nov 26 15:33:20 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 ## NOTE: this is a testing platform where every neighbor is treated as a
 ## a cone, prior to combining cones and spheres into the same neighborhood.
 source("~/work/neighborhoods/surround/rewrite/cones.R")
+source("~/work/neighborhoods/surround/rewrite/create_test.R")
 
 ################################################################################
 ##
@@ -26,10 +27,10 @@ v_rad <- function(x, z) {
     return ( theta )
 }
 
-## Convert neighborhood into pixel matrix
+## Convert neighborhood into pixel matrix, all neighbors as cones
 ## Rows are horizontal radians, cols are vertical
 ## positive x-axis is 0 radians in both dims
-pixel_matrix <- function(targ, nbrs, size=10, precise=TRUE) {
+pixel_matrix_cones <- function(targ, nbrs, size=10, precise=TRUE) {
     mat_ind <- seq(0, 2*pi, length.out=size)
     mat <- matrix(0, nrow=size, ncol=size)
     inc <- 2*pi/size
@@ -39,53 +40,74 @@ pixel_matrix <- function(targ, nbrs, size=10, precise=TRUE) {
         b <- ellipse_long_axis(n)
         a <- ellipse_short_axis(targ, n)
         h <- height_angle(n)
+
         use_triangle <- ifelse(a >= h, FALSE, TRUE)  # search for triangle or not
         pos <- c(n[["x"]], n[["y"]], n[["ht"]] - n[["crdepth"]] + n[["z"]])
         names(pos) <- c("x", "y", "z")
 
-        ## horizontal/vertical radians
+        ## horizontal radians
         pol <- cart2pol(n[["x"]], n[["y"]])
-        hrad <- c(-1,1)*b/2 + pol[["theta"]]
+        hrad <- c(-1,1)*b + pol[["theta"]]
 
         ## If target is above neighbor, the FRONT of the ellipse MUST be
         ## accounted for (as well as possibly the back), and if the target
         ## is below the neighbor the BACK of the ellipse MUST be accounted for
-        ## *** Create the search window ***
+        ## Vertical radians
         if (targ[["ht"]] >= pos[["z"]]) {  # target looking down at nbr
-            vrad <- ifelse(use_triangle,
-                           c(-1,1)*c(h,a) + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]),
-                           c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]) )
+            if (use_triangle) {
+                vrad <- c(-1,1)*c(h,a) + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
+            } else {
+                vrad <- c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
+            }
         } else {                           # target looking up at nbr
-            vrad <- ifelse(use_triangle,
-                           c(-1,1)*c(h,a) + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]),
-                           c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]) )
+            if (use_triangle) {
+                vrad <- c(-1,1)*c(a,h) + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
+            } else {
+                vrad <- c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]]) 
+            }
         }
-        
-        vrad_ellipse <- c(-1,1)*a + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
-        vrad_both <- c(-1,1)*w_ht/2 + v_rad(pos[["x"]], pos[["z"]] - targ[["ht"]])
 
-        ## Fill matrix (square version)
+        ## *** Create the search window ***
         rows <- which(mat_ind >= min(hrad) - inc & mat_ind <= max(hrad) + inc)
         cols <- which(mat_ind >= min(vrad) - inc & mat_ind <= max(vrad) + inc)
         
         if (!precise) {
+            ## Fill matrix (recangles version)
             mat[rows, cols] <- 1
         } else {
-            ## More precise version, find pixels within inscribed circle
-            ## Check square for pixels <= theta/2 euclidean distance
-            dmat <- euc(t(as.matrix(expand.grid(rows*2*pi/size, cols*2*pi/size))),
-                        c(mean(hrad), mean(vrad)))
-            dmat <- matrix(ifelse(dmat <= theta/2, 1, 0), nrow=length(rows), ncol=length(cols))
-            mat[rows, cols] <- mat[rows, cols] + dmat
+            ## More precise version
+            ## 1. Check for pixels within ellipse part of cone
+            ## 2. Check for pixels within triangle part of cone
+            rc <- expand.grid(x=rows*2*pi/size, y=cols*2*pi/size)
+            pxs <- ellipse_pixels(rc, hrad, vrad, a, b, h)
+            mat[rows, cols] <- mat[rows, cols] + matrix(pxs, nrow=length(rows),
+                                                        ncol=length(cols))
             ## sum(dmat <= theta/2)/length(dmat)  # should approach pi/4 if circle exactly inscribed
         }
     }
     return ( mat )
 }
 
-## Image of matrix
-image_hood <- function(targ, nbrs, size=100, precise = TRUE) {
-    pmat <- pixel_matrix(targ, nbrs, size=size, precise=precise)
+## Pixels within ellipse from search window
+ellipse_pixels <- function(xy, hrad, vrad, a, b, h, use_triangle, side) {
+    ## Find ellipse pixels
+    res <- ifelse((xy$x - mean(hrad))**2/b**2 + (xy$y - mean(vrad))**2/a**2 <= 1,
+                  T, F)
+    if (use_triangle) {  # find triangle pixels
+        m <- 
+        res[xy$x <= mean(hrad) &
+                xy$y >= mean(xy$y) &
+                    xy$y <= mean(vrad) + xy$x * (h/b)] <- 1
+        res[xy$x > mean(hrad) &
+                xy$y >= mean(xy$y) &
+                    xy$y <= (h+mean(vrad)) - xy$x * (h/b)] <- 1
+    }
+    return ( res )
+}
+
+## Image of matrix, all neighbors treated as cones
+image_hood_cones <- function(targ, nbrs, size=100, precise = TRUE) {
+    pmat <- pixel_matrix_cones(targ, nbrs, size=size, precise=precise)
     mat_ind <- seq(0, 2*pi, length.out = size)
     image(mat_ind, mat_ind, pmat, xlab = "Horizontal Radians",
           ylab = "Vertical Radians",
@@ -96,3 +118,11 @@ image_hood <- function(targ, nbrs, size=100, precise = TRUE) {
     text(seq(0.5, 2*pi-0.5, length.out = 4), y=pi, c("South", "East", "North", "West"), cex=2)
     text(c(pi, pi), y = c(0.5, 2*pi-0.5), c("Above Target", "Below Target"), cex = 2)
 }
+
+## Make graphics
+source("~/work/neighborhoods/surround/rewrite/create_test.R")
+par(mfrow = c(1,2))
+image_hood_cones(targ, nbrs, 1000, precise=F)
+image_hood_cones(targ, nbrs, 1000, precise=T)
+
+draw_hood_full(nbrs)

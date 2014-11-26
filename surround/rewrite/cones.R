@@ -3,7 +3,7 @@
 ## Description: Conical neighbors
 ## Author: Noah Peart
 ## Created: Mon Nov 24 18:54:32 2014 (-0500)
-## Last-Updated: Tue Nov 25 13:40:57 2014 (-0500)
+## Last-Updated: Wed Nov 26 13:37:56 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/neighborhoods/surround/rewrite/spheres.R")
@@ -23,13 +23,14 @@ neighbor_radius <- function(nbr, contain=FALSE) {
 ## Angle subtended by long axis of neighbor
 ellipse_long_axis <- function(nbr) {
     r <- neighbor_radius(nbr, contain=FALSE)  # don't allow target to be fully obscured
-    return ( 2 * atan(r/nbr[["dist"]]) )
+    d_xy <- euc(c(0,0), c(nbr[["x"]], nbr[["y"]]))
+    return ( atan(r/d_xy) )
 }
 
 ## Angle subtended at target by vector from middle of neighbor crown base to crown top
 height_angle <- function(nbr) {
     base <- nbr[["z"]] + nbr[["ht"]] - nbr[["crdepth"]]
-    stopifnot(base >= 0)  # base of neighbor shouldn't be negative
+    ## stopifnot(base >= 0)  # base of neighbor shouldn't be negative
     top <- nbr[["z"]] + nbr[["ht"]]
     ab <- c(nbr[["x"]], nbr[["y"]], base)
     ac <- c(nbr[["x"]], nbr[["y"]], top)
