@@ -3,7 +3,7 @@
 ## Description: Drawing a neighborhood full of cones
 ## Author: Noah Peart
 ## Created: Tue Nov 25 13:23:17 2014 (-0500)
-## Last-Updated: Wed Nov 26 18:45:01 2014 (-0500)
+## Last-Updated: Wed Dec 17 12:36:59 2014 (-0500)
 ##           By: Noah Peart
 ######################################################################
 ## NOTE: this is a testing platform where every neighbor is treated as a
@@ -27,6 +27,7 @@ v_rad <- function(x, z) {
     return ( theta )
 }
 
+## 
 ## Convert neighborhood into pixel matrix, all neighbors as cones
 ## Rows are horizontal radians, cols are vertical
 ## positive x-axis is 0 radians in both dims
@@ -154,3 +155,7 @@ source("~/work/neighborhoods/surround/rewrite/create_test.R")
 par(mfrow = c(1,2))
 image_hood_cones(targ, nbrs, 1000, precise=T)
 draw_hood_full(nbrs)
+
+par(mfrow=c(1,2))
+image_hood_cones(targ, nbrs, 1000, precise=T)
+image_hood(targ, nbrs, 1000, precise = T)
