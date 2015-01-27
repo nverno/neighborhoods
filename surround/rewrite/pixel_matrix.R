@@ -3,7 +3,7 @@
 ## Description: Create pixel matrix for a neighborhood
 ## Author: Noah Peart
 ## Created: Tue Nov 11 16:30:42 2014 (-0500)
-## Last-Updated: Tue Nov 25 13:22:49 2014 (-0500)
+## Last-Updated: Tue Jan 27 18:15:01 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/neighborhoods/surround/rewrite/spheres.R")
@@ -30,6 +30,7 @@ v_rad <- function(x, z) {
 ## Convert neighborhood into pixel matrix
 ## Rows are horizontal radians, cols are vertical
 ## positive x-axis is 0 radians in both dims
+## 
 pixel_matrix <- function(targ, nbrs, size=10, precise=TRUE) {
     mat_ind <- seq(0, 2*pi, length.out=size)
     mat <- matrix(0, nrow=size, ncol=size)
