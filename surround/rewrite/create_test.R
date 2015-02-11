@@ -3,7 +3,7 @@
 ## Description: Create test neighborhood data
 ## Author: Noah Peart
 ## Created: Tue Nov 11 16:31:59 2014 (-0500)
-## Last-Updated: Wed Feb 11 16:31:16 2015 (-0500)
+## Last-Updated: Wed Feb 11 18:01:20 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -41,17 +41,10 @@ make_nbrs <- function(targ, samp=samp, num_nebs=num_nebs, radius=radius) {
 }
 
 ## Test data.frame
-radius = 10.5
-num_nebs = 5
+radius = 100
+num_nebs = 1000
 ## targ <- samp[sample(nrow(samp), 1), ]
 targ <- samp[sample(1:nrow(samp),1),]
 nbrs <- make_nbrs(targ, samp, num_nebs = num_nebs, radius = radius)
 
 
-## 3d visualization of plot
-library(rgl)
-plot3d(nbrs$x, nbrs$y, nbrs$z, type="s", col=as.numeric(nbrs$spec))
-
-open3d()
-layout3d(matrix(1:16, 4,4), heights = c(1,3,1,3))
-text3d(0,0,0,"tetrahedron3d"); next3d()
