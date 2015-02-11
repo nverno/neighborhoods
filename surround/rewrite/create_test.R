@@ -3,12 +3,13 @@
 ## Description: Create test neighborhood data
 ## Author: Noah Peart
 ## Created: Tue Nov 11 16:31:59 2014 (-0500)
-## Last-Updated: Wed Nov 26 17:39:30 2014 (-0500)
+## Last-Updated: Wed Feb 11 16:31:16 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
 source("~/work/functions/functions-geometry.R")
 source("~/work/ecodatascripts/vars/z-values/functions.R")
+source("~/work/neighborhoods/surround/rewrite/spheres.R")
 
 ## Load data and pull out working subset (LOW elevation complete cases)
 dat <- read.csv("~/work/data/moose/moose-long.csv")
@@ -25,9 +26,12 @@ asp_range <- range(dat[dat$elevcl == "L" & dat$stat == "ALIVE", "asp"])
 make_nbrs <- function(targ, samp=samp, num_nebs=num_nebs, radius=radius) {
     nbrs <- data.frame(x = sample(-floor(radius):floor(radius), num_nebs, replace = T),
                        y = sample(-floor(radius):floor(radius), num_nebs, replace = T))
-    nbrs$slope <- runif(1, min=slope_range[1], max=slope_range[2])
-    nbrs$asp <- runif(1, min=asp_range[1], max=asp_range[2])
-    nbrs$z <- zvals(nbrs[,c("x","y")], theta_S=nbrs$slope, theta_A=nbrs$asp)
+    slope <- runif(1, min=slope_range[1], max=slope_range[2])
+    asp <- runif(1, min=asp_range[1], max=asp_range[2])
+    nbrs$slope <- slope
+    nbrs$asp <- asp
+    ps <- matrix(c(nbrs$x, nbrs$y, rep(0, num_nebs), rep(1, num_nebs)), ncol = 4)
+    nbrs$z <- zvals(ps, theta_a = asp, theta_s = slope)
     rows <- sample(1:nrow(samp), num_nebs, replace = TRUE)
     nbrs <- cbind(nbrs, samp[rows, ])
     nbrs$dist <- euc(rbind(nbrs$x, nbrs$y, z_ellipse(nbrs$ht, nbrs$z, nbrs$crdepth)),
@@ -37,9 +41,17 @@ make_nbrs <- function(targ, samp=samp, num_nebs=num_nebs, radius=radius) {
 }
 
 ## Test data.frame
-radius = 2.5
+radius = 10.5
 num_nebs = 5
 ## targ <- samp[sample(nrow(samp), 1), ]
 targ <- samp[sample(1:nrow(samp),1),]
 nbrs <- make_nbrs(targ, samp, num_nebs = num_nebs, radius = radius)
 
+
+## 3d visualization of plot
+library(rgl)
+plot3d(nbrs$x, nbrs$y, nbrs$z, type="s", col=as.numeric(nbrs$spec))
+
+open3d()
+layout3d(matrix(1:16, 4,4), heights = c(1,3,1,3))
+text3d(0,0,0,"tetrahedron3d"); next3d()
