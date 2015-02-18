@@ -3,7 +3,7 @@
 ## Description: Create pixel matrix for a neighborhood
 ## Author: Noah Peart
 ## Created: Tue Nov 11 16:30:42 2014 (-0500)
-## Last-Updated: Tue Jan 27 18:15:01 2015 (-0500)
+## Last-Updated: Wed Feb 18 16:48:08 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/neighborhoods/surround/rewrite/spheres.R")

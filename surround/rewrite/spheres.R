@@ -3,7 +3,7 @@
 ## Description: Spherical neighbors
 ## Author: Noah Peart
 ## Created: Mon Nov 10 12:45:00 2014 (-0500)
-## Last-Updated: Mon Nov 24 18:55:11 2014 (-0500)
+## Last-Updated: Wed Feb 18 14:22:14 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-geometry.R")  # solid angle for cone
@@ -43,7 +43,7 @@ cone_theta <- function(nbr) {
 draw_hood_empty <- function(radius=2.5) {
     xyvals <- expand.grid(x=-radius:radius,
                           y=-radius:radius)
-    plot(xyvals, type="n", main="Example Neighborhood")
+    plot(xyvals, type="n", main="2D Neighborhood with Sight Angles")
     abline(h=-radius:radius, v=-radius:radius, lty=2)
     abline(h=c(-radius,radius),v=c(-radius,radius),lwd=2)
     points(0,0, col = "blue", pch=15)
@@ -73,6 +73,5 @@ draw_hood_full <- function(nbrs, radius=2.5) {
     for (n in 1:nrow(nbrs)) {
         draw_nbr_sphere(nbrs[n,])
     }
-
 }
 
