@@ -3,7 +3,7 @@
 ## Description: Visual tests for pixel matrix
 ## Author: Noah Peart
 ## Created: Wed Feb 18 13:53:11 2015 (-0500)
-## Last-Updated: Wed Feb 18 23:36:51 2015 (-0500)
+## Last-Updated: Thu Feb 19 17:46:58 2015 (-0500)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/nbrs3d/vis.R")  # 3d visualization stuff (p3d, rgl shapes)
