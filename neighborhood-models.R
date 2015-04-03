@@ -105,6 +105,7 @@ density.nci.model <- function(PG, C, D)
   competition.effect <- exp(-(C) * nci^D)
   PG * competition.effect
 }
+
 size.logistic.nci.lambda.model <- function(PG, sizeX0, sizeXb, alpha, beta, lambda, C, D)
 {
   size.effect <- exp(-0.5*(log(targets$PRIORBA/sizeX0)/sizeXb)^2)
