@@ -3,7 +3,7 @@
 ## Description: Create test neighborhood data
 ## Author: Noah Peart
 ## Created: Tue Nov 11 16:31:59 2014 (-0500)
-## Last-Updated: Tue Feb 17 15:59:42 2015 (-0500)
+## Last-Updated: Mon Apr  6 15:49:27 2015 (-0400)
 ##           By: Noah Peart
 ######################################################################
 source("~/work/functions/functions-coordinates.R")
@@ -13,7 +13,9 @@ source("~/work/neighborhoods/surround/rewrite/spheres.R")
 
 ## Load data and pull out working subset (LOW elevation complete cases)
 dat <- read.csv("~/work/data/moose/moose-long.csv")
-samp <- dat[dat$elevcl == "L" & dat$stat == "ALIVE", c("spec", "dbh", "ba", "ht", "crarea", "crdepth")]
+samp <- dat[dat$stat == "ALIVE" & dat$time == 86, 
+            c("x", "y", "z", "pplot", "spec", "dbh", "ba", "ht", "crarea", "crdepth")]
+
 samp <- samp[complete.cases(samp), ]  # Use this subset to sample neighbor variables
 samp <- samp[samp$ht > 0 & samp$ht > samp$crdepth,]
 samp$shape <- ifelse(samp$spec %in% c("ABBA", "PIRU"), "cone", "sphere")
@@ -41,9 +43,10 @@ make_nbrs <- function(targ, samp=samp, num_nebs=num_nebs, radius=radius) {
 }
 
 ## Test data.frame
-radius = 2.5
-num_nebs = 5
+radius = 5
+num_nebs = 15
 ## targ <- samp[sample(nrow(samp), 1), ]
 targ <- samp[sample(1:nrow(samp),1),]
 nbrs <- make_nbrs(targ, samp, num_nebs = num_nebs, radius = radius)
 
+tst <- samp[samp$pplot == 14, ]
